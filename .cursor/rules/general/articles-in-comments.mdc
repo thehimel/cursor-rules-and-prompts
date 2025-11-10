@@ -1,0 +1,45 @@
+---
+alwaysApply: true
+description: Enforce proper use of articles (a, an, the) in comments to maintain grammatical correctness and readability.
+author: Himel Das
+---
+
+# Proper Use of Articles in Comments
+
+All comments must include appropriate articles ('a', 'an', 'the') where necessary to maintain grammatical correctness and readability.
+
+## Rules
+
+1. Use "the" when referring to a specific or previously mentioned item
+2. Use "a" or "an" when introducing a new, non-specific item
+3. Use "an" before words starting with a vowel sound
+4. Do not omit articles where they are grammatically required
+
+## Examples
+
+### Correct Usage
+
+- ✅ "Initialize the database connection."
+- ✅ "Create an instance of the User class."
+- ✅ "Add a new item to the list."
+- ✅ "Build the command based on the platform."
+- ✅ "Handle the Finder separately (macOS only)."
+- ✅ "Get the icon path for the window."
+- ✅ "Open the project in the specified IDE."
+
+### Incorrect Usage
+
+- ❌ "Initialize database connection." → "Initialize **the** database connection."
+- ❌ "Create instance of User class." → "Create **an** instance of **the** User class."
+- ❌ "Add new item to list." → "Add **a** new item to **the** list."
+- ❌ "Build command based on platform." → "Build **the** command based on **the** platform."
+- ❌ "Handle Finder separately." → "Handle **the** Finder separately."
+- ❌ "Get icon path for window." → "Get **the** icon path for **the** window."
+- ❌ "Open project in specified IDE." → "Open **the** project in **the** specified IDE."
+
+## Exceptions
+
+- Code examples or technical terms that are conventionally written without articles
+- Variable names or function names in comments
+- URLs or file paths
+- Short imperative commands where articles would be awkward (e.g., "Save file" in UI labels)
