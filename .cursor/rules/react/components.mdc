@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-description: Rules for component usage - which component libraries are allowed (shadcn/ui, Aceternity, Kibo, Magic UI, etc.), reuse over recreation, and table implementation standards.
+description: Rules for component usage - which component libraries are allowed (shadcn/ui, Aceternity, Kibo, Magic UI, etc.), reuse over recreation, table implementation standards, and component modularization for both new features and existing components.
 author: Himel Das
 ---
 
@@ -28,3 +28,27 @@ Use components ONLY from:
 - Default page size: 40, with options for 80 and 100
 - Include pagination, sorting, and filtering capabilities
 
+## Component Modularization
+
+When creating or updating components (including new features), group related components together in single files to minimize file count and maintain ease of use. This applies to both breaking down existing large components and building new feature components from scratch.
+
+### ✅ DO - Group Related Components
+
+- Group components that work together in the same file
+- Keep related UI components together (e.g., list and list item components)
+- Group layout components together (e.g., header, footer, setup screens)
+- Keep domain-specific components together
+
+### ❌ DON'T - Create Too Many Files
+
+- Don't create separate files for each small component
+- Don't split related components that are used together
+- Don't create unnecessary subdirectories for component organization
+
+### Principles
+
+1. **Group by Domain**: Components that work together should be in the same file
+2. **Keep Main Component Simple**: Main component should focus on state management and orchestration, using modular components
+3. **Minimize Files**: Prefer fewer files with related components over many small files
+4. **Ease of Use First**: Don't break components if it makes them harder to use or maintain
+5. **Don't Over-Modularize**: If breaking something apart makes it complicated to use, keep it together
