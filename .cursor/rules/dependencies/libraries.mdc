@@ -1,6 +1,7 @@
 ---
 alwaysApply: true
 description: Rules for library selection - prefer popular, well-maintained libraries over custom code. Research and use battle-tested solutions before writing custom implementations.
+author: Himel Das
 ---
 
 # Libraries & Dependencies

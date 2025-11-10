@@ -1,6 +1,7 @@
 ---
 alwaysApply: true
 description: Rules for component structure, import patterns using @/ path aliases (never relative paths), import ordering, and TypeScript conventions.
+author: Himel Das
 ---
 
 # Code Patterns

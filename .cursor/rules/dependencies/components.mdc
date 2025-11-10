@@ -1,6 +1,7 @@
 ---
 alwaysApply: true
 description: Rules for component usage - which component libraries are allowed (shadcn/ui, Aceternity, Kibo, Magic UI, etc.), reuse over recreation, and table implementation standards.
+author: Himel Das
 ---
 
 # Component Usage
