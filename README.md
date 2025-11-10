@@ -76,8 +76,13 @@ chmod +x sync-cursor-rules.sh
 ./sync-cursor-rules.sh
 ```
 
+> 📌 **Sync Script Version:** `1.0.0`
+> 
+> ⚠️ **Important:** Before running the sync script, always download the latest version to ensure you have the most recent updates. The script will display its version number when run - compare it with the version shown above. If your script version is older, download the updated script first.
+
 The script will:
-- ✅ Copy all files if `.cursor` doesn't exist
+- 📋💬 Let you choose what to sync: Rules only, Prompts only, or Both
+- ✅ Copy selected files if `.cursor` doesn't exist
 - 🔄 Compare and sync files if `.cursor` already exists
 - ❓ Ask before replacing modified files
 - ➕ Automatically add new files from the repository
