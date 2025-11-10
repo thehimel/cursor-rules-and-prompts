@@ -61,9 +61,26 @@ import { MyType } from '@/components/quiz/types';
 
 ## 🚀 Quick Start
 
+### Option 1: Manual Setup
 1. 📥 **Clone or copy this repository** into your project
 2. 📁 **Place the `.cursor` folder** in your project root
 3. ✨ **That's it** - Cursor will automatically use these rules
+
+### Option 2: Automatic Sync (Recommended)
+Use the sync script to automatically keep your `.cursor` directory updated:
+
+```bash
+# Download and run the sync script
+curl -o sync-cursor-rules.sh https://raw.githubusercontent.com/thehimel/cursor-rules-and-prompts/main/sync-cursor-rules.sh
+chmod +x sync-cursor-rules.sh
+./sync-cursor-rules.sh
+```
+
+The script will:
+- ✅ Copy all files if `.cursor` doesn't exist
+- 🔄 Compare and sync files if `.cursor` already exists
+- ❓ Ask before replacing modified files
+- ➕ Automatically add new files from the repository
 
 > 💬 The rules are organized by category and apply automatically when you're working in Cursor. No configuration needed.
 
