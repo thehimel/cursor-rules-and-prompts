@@ -1,0 +1,29 @@
+---
+alwaysApply: true
+description: Rules for component usage - which component libraries are allowed (shadcn/ui, Aceternity, Kibo, Magic UI, etc.), reuse over recreation, and table implementation standards.
+---
+
+# Component Usage
+
+## Allowed Sources
+Use components ONLY from:
+1. shadcn/ui components
+2. `@/components/ui/`
+3. `@/components/ui/aceternity/`
+4. `@/components/ui/kibo-ui/`
+5. `@/components/ui/magicui/`
+6. `@/components/ui/motion-primitives/`
+7. `@/components/ui/origin-ui/`
+8. `@/components/ui/skiper-ui/`
+
+## Rules
+- Check existing components before creating new ones
+- Reuse over recreate
+- Do NOT install new component libraries
+
+## Table Implementation
+- Use `@tanstack/react-table` library (TanStack Table) for all table implementations
+- Reference `src/components/vocabulary-table.tsx` for configuration patterns
+- Default page size: 40, with options for 80 and 100
+- Include pagination, sorting, and filtering capabilities
+
