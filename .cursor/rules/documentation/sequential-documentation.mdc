@@ -1,0 +1,102 @@
+---
+alwaysApply: true
+description: Rules for organizing feature documentation sequentially when implementing new features. Determines whether to use sequential numbering and folder structure based on existing documentation patterns.
+author: Himel Das
+---
+
+# Sequential Documentation
+
+When implementing a new feature and creating documentation for it, follow these rules to determine where to place the documentation and whether to use sequential numbering.
+
+## Decision Tree
+
+### 1. Check for `docs/steps/` Directory
+
+**If `docs/steps/` exists:**
+- Proceed to check for sequential numbering pattern
+
+**If `docs/steps/` does NOT exist:**
+- Place documentation directly in `docs/` directory
+- Do NOT use sequential numbering
+
+### 2. Check for Sequential Numbering Pattern
+
+**If `docs/steps/` exists AND contains files with sequential numbers (e.g., `1-feature.md`, `2-feature.md`):**
+- Add new documentation with the next sequential number
+- Format: `N-feature-name.md` where N is the next number in sequence
+- Place in `docs/steps/` directory
+
+**If `docs/steps/` exists BUT does NOT contain sequentially numbered files:**
+- Add documentation in `docs/steps/` directory
+- Do NOT add sequential numbering
+- Use standard kebab-case naming: `feature-name.md`
+
+## Examples
+
+### Scenario 1: Sequential Documentation Exists
+
+```
+docs/
+  steps/
+    1-initialization.md
+    2-menu-bar-icon.md
+    3-command-execution.md
+```
+
+**Action:** Add new feature doc as `4-new-feature.md` in `docs/steps/`
+
+### Scenario 2: Steps Folder Exists, No Sequential Pattern
+
+```
+docs/
+  steps/
+    setup-guide.md
+    troubleshooting.md
+    configuration.md
+```
+
+**Action:** Add new feature doc as `new-feature.md` in `docs/steps/`
+
+### Scenario 3: No Steps Folder
+
+```
+docs/
+  README.md
+  setup.md
+  api-guide.md
+```
+
+**Action:** Add new feature doc as `new-feature.md` directly in `docs/`
+
+## Rules
+
+- ✅ Always check for `docs/steps/` directory first
+- ✅ Look for existing sequential numbering pattern
+- ✅ Match the existing documentation structure
+- ✅ Use kebab-case for all documentation filenames
+- ❌ Don't create sequential numbering if it doesn't already exist
+- ❌ Don't mix sequential and non-sequential docs in the same directory
+- ❌ Don't skip numbers in the sequence
+
+## Sequential Numbering Format
+
+When using sequential numbering:
+- Format: `N-feature-name.md`
+- N is an integer starting from 1
+- Use single dash between number and name
+- Use kebab-case for the feature name portion
+- Examples: `1-setup.md`, `2-authentication.md`, `10-deployment.md`
+
+## When to Create Sequential Documentation
+
+Sequential documentation is useful for:
+- Implementation steps that build on each other
+- Feature development timeline
+- Tutorial or guide progression
+- Migration or upgrade steps
+
+Sequential documentation may NOT be appropriate for:
+- Reference documentation
+- Independent feature docs
+- API documentation
+- General guides
