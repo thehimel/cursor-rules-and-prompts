@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-description: Rules for organizing Swift/SwiftUI projects with clear separation between foundational/reusable code and application-specific code. Reusable code goes in Core/, app-specific code goes in App/.
+description: Organize code with foundational/application separation and extract reusable components from context-specific wrappers
 author: Himel Das
 ---
 
@@ -10,24 +10,24 @@ author: Himel Das
 
 Separate foundational/reusable code from application-specific code:
 
-- **Foundational/Reusable Code** → `Core/` - Reusable across Swift projects
-- **Application-Specific Code** → `App/` - Specific to this application
+- **Foundational/Reusable Code** → Reusable across projects
+- **Application-Specific Code** → Specific to this application
 
 ## Directory Structure
 
-### Foundational Utilities (`Core/Utils/`)
+### Foundational Utilities
 
 Generic utilities reusable across projects:
 
-- Platform-specific utilities (file system helpers, system integration)
-- Framework configuration (logging, protocol handlers)
-- System integration (window management, notifications, preferences)
+- Platform-specific utilities
+- Framework configuration
+- System integration
 - Generic helpers that work across different applications
 - Reusable data models and types
 
 These utilities have no dependencies on application-specific code and can be extracted for use in other projects.
 
-### Application Utilities (`App/Utils/`)
+### Application Utilities
 
 Application-specific utilities:
 
@@ -39,23 +39,23 @@ Application-specific utilities:
 
 These utilities depend on application-specific types, data structures, or business logic.
 
-### Foundational Views (`Core/Views/`)
+### Foundational Views
 
-Reusable SwiftUI views and UI components:
+Reusable UI components:
 
-- Generic UI components (buttons, cards, inputs)
+- Generic UI components
 - Theme providers and utilities
 - Reusable view modifiers
 - Generic layout components
 - Shared view extensions
 
-These views are reusable and not tied to specific application features. They conform to SwiftUI's View protocol and follow SwiftUI conventions.
+These views are reusable and not tied to specific application features.
 
-### Application Views (`App/`)
+### Application Views
 
 Application-specific views and features:
 
-- Application entry point (App struct with @main attribute)
+- Application entry point
 - Feature-specific views and screens
 - Domain-specific components
 - Application-specific layouts
@@ -63,51 +63,48 @@ Application-specific views and features:
 
 These views implement application-specific functionality and UI.
 
-## Recommended Project Structure
+## Component Extraction Pattern
 
-For better organization, consider this structure:
+### Core Principle
 
-```
-YourApp/
-├── YourApp/
-│   ├── App/
-│   │   ├── YourAppApp.swift      # App entry point
-│   │   ├── AppDelegate.swift     # App lifecycle (if needed)
-│   │   ├── Views/
-│   │   │   ├── ContentView.swift     # Main view
-│   │   │   └── Components/           # Application-specific UI components
-│   │   ├── Models/
-│   │   │   └── YourModel.swift       # Application-specific data models
-│   │   ├── Services/
-│   │   │   └── YourService.swift     # Application-specific business logic
-│   │   └── Utils/
-│   │       └── Extensions.swift      # Application-specific helper extensions
-│   ├── Core/
-│   │   ├── Utils/
-│   │   │   └── CoreUtility.swift     # Reusable utilities
-│   │   └── Views/
-│   │       └── CoreComponent.swift  # Reusable UI components
-│   └── Assets.xcassets/              # Resources
-├── YourAppTests/
-└── YourApp.xcodeproj/
-```
+Extract reusable UI components from context-specific wrappers to enable reuse across different contexts.
 
-This structure follows the Core/App separation principle:
-- **App/** - All application-specific code (App entry, Views, Models, Services, Utils)
-- **Core/** - Reusable/foundational code (utilities, views, and components that can be extracted)
+### Pattern Structure
+
+Separate core components from their context-specific wrappers:
+- Core component in a dedicated views directory
+- Context wrapper at appropriate level
+
+### Benefits
+
+**Reusability**: A core component can be used in multiple contexts
+- Different window types
+- Different presentation styles
+- Any container
+
+**Separation of Concerns**:
+- Core component: Pure UI with business logic
+- Wrapper: Context-specific configuration and lifecycle
+
+**Flexible Sizing**: Component accepts optional dimensions
+- Fixed dimensions when needed
+- Flexible dimensions for adaptive layouts
+- Easy adaptation to different contexts
 
 ## Rules
 
 ### ✅ DO
 
-- Place reusable Swift utilities in `Core/Utils/`
-- Place application-specific utilities in `App/Utils/`
-- Place reusable SwiftUI views in `Core/Views/`
-- Place application-specific views in `App/`
+- Place reusable utilities in foundational directories
+- Place application-specific utilities in application directories
+- Place reusable views in foundational directories
+- Place application-specific views in application directories
+- Extract core UI components from context-specific wrappers
+- Make components accept optional dimensions for flexibility
+- Bundle new features in a dedicated directory with all related code
 - Keep foundational code independent of application code
 - Make foundational utilities importable by application code
-- Use SwiftUI naming conventions (Views not Components)
-- Keep resources like asset catalogs at the root level
+- Keep resources at the appropriate level
 
 ### ❌ DON'T
 
@@ -116,7 +113,9 @@ This structure follows the Core/App separation principle:
 - Place reusable utilities in application directories
 - Create dependencies from foundational code to application code
 - Include application-specific types or data in foundational code
-- Use non-SwiftUI terminology for UI components
+- Split feature code across multiple locations
+- Hardcode context-specific configuration in reusable components
+- Create separate components for each context when extraction is possible
 
 ## Benefits
 
@@ -125,4 +124,4 @@ This structure follows the Core/App separation principle:
 - **Maintainability**: Clear separation makes code easier to understand and modify
 - **Template-friendly**: Foundation code serves as a reusable template
 - **Scalability**: Easy to add new features without affecting foundational code
-- **SwiftUI conventions**: Follows standard Swift/SwiftUI naming and structure patterns
+- **Component flexibility**: Core components can be reused in multiple contexts without modification
