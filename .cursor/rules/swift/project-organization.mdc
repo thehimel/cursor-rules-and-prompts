@@ -67,40 +67,54 @@ These views implement application-specific functionality and UI.
 
 ### Core Principle
 
-Extract reusable UI components from context-specific wrappers to enable reuse across different contexts.
+Never embed component-specific UI logic directly in context wrappers. Always extract reusable UI components into separate files so they can be used in any context (window, popover, sheet, etc.).
 
 ### Pattern Structure
 
-Separate core components from their context-specific wrappers:
-- Core component in a dedicated views directory
-- Context wrapper at appropriate level
+**Two-Layer Architecture:**
+1. **Core Component** - Contains all UI logic, state management, and business logic
+   - Lives in dedicated views directory
+   - Context-agnostic (no knowledge of popover, window, or sheet)
+   - Accepts optional dimensions for flexibility
+   - Manages its own internal state
+
+2. **Context Wrapper** - Minimal wrapper handling only context-specific concerns
+   - Handles context-specific lifecycle (setup checks, initialization)
+   - Manages context-specific sizing and preferences
+   - Listens to context-specific notifications
+   - Passes configuration to core component
 
 ### Benefits
 
-**Reusability**: A core component can be used in multiple contexts
-- Different window types
-- Different presentation styles
+**Reusability**: Core component can be used in multiple contexts
+- Popover
+- Regular window
+- Sheet or modal
 - Any container
 
 **Separation of Concerns**:
 - Core component: Pure UI with business logic
-- Wrapper: Context-specific configuration and lifecycle
+- Wrapper: Only context-specific configuration and lifecycle
 
 **Flexible Sizing**: Component accepts optional dimensions
 - Fixed dimensions when needed
 - Flexible dimensions for adaptive layouts
 - Easy adaptation to different contexts
 
+**Maintainability**: Changes to UI logic happen in one place, regardless of how many contexts use the component
+
 ## Rules
 
 ### ✅ DO
 
+- **Always extract** reusable UI components into separate files
+- Create minimal context wrappers that only handle context-specific concerns
+- Make components accept optional dimensions for flexibility
+- Keep all UI logic and state management in the core component
 - Place reusable utilities in foundational directories
 - Place application-specific utilities in application directories
 - Place reusable views in foundational directories
 - Place application-specific views in application directories
-- Extract core UI components from context-specific wrappers
-- Make components accept optional dimensions for flexibility
 - Bundle new features in a dedicated directory with all related code
 - Keep foundational code independent of application code
 - Make foundational utilities importable by application code
@@ -108,14 +122,16 @@ Separate core components from their context-specific wrappers:
 
 ### ❌ DON'T
 
+- **Never embed** component-specific UI logic directly in context wrappers
+- **Never write** business logic in context wrappers (popover, window, sheet)
+- Create separate components for each context when extraction is possible
+- Hardcode context-specific configuration in reusable components
 - Mix foundational and application-specific code
 - Place application-specific logic in foundational utilities
 - Place reusable utilities in application directories
 - Create dependencies from foundational code to application code
 - Include application-specific types or data in foundational code
 - Split feature code across multiple locations
-- Hardcode context-specific configuration in reusable components
-- Create separate components for each context when extraction is possible
 
 ## Benefits
 
