@@ -77,7 +77,7 @@ App/
 │       ├── ViewModels/
 │       │   └── FeatureViewModel.swift  # Feature business logic and state
 │       ├── Views/
-│       │   └── FeatureView.swift      # Feature presentation layer
+│       │   └── FeatureView.swift       # Feature presentation layer
 │       ├── Services/
 │       │   └── FeatureService.swift    # Feature-specific services
 │       └── Managers/
@@ -101,6 +101,10 @@ Never embed component-specific UI logic directly in context wrappers. Always ext
 
 **Benefits:** Reusable across contexts (popover, window, sheet), clear separation of concerns, flexible sizing, single source of truth for UI logic
 
+### Shared Component Extraction
+
+When the same UI components appear in multiple places (e.g., settings tab and setup wizard), extract them into shared reusable components. Create dedicated files for shared components within the feature's Views directory. Pass data and callbacks through bindings and closures to maintain flexibility. This eliminates code duplication and ensures consistent behavior across all usages.
+
 ## Rules
 
 ### ✅ DO
@@ -122,6 +126,9 @@ Never embed component-specific UI logic directly in context wrappers. Always ext
 - Create minimal context wrappers that only handle context-specific concerns
 - Make components accept optional dimensions for flexibility
 - Keep all UI logic and state management in ViewModels
+- Extract duplicate UI sections into shared components when used in multiple places
+- Create dedicated files for shared components within the feature's Views directory
+- Use bindings and closures to pass data and actions to shared components
 
 #### Organization
 - Place app-level models, views, ViewModels, and services at the top level
@@ -152,6 +159,8 @@ Never embed component-specific UI logic directly in context wrappers. Always ext
 - **Never write** business logic in context wrappers (popover, window, sheet)
 - Create separate components for each context when extraction is possible
 - Hardcode context-specific configuration in reusable components
+- Do not duplicate UI code across multiple views when shared components can be extracted
+- Do not mix shared and context-specific logic in the same component
 
 #### Organization
 - Place feature-specific code at the app level (must be under `Features/`)
