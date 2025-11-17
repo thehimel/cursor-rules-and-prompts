@@ -161,13 +161,13 @@ check_for_updates() {
         return 1
     fi
     
-    # Check for new files in destination (exclude meta.json from comparison)
+    # Check for new files in destination (exclude meta.json and .cursorignore from comparison)
     while IFS= read -r file; do
         local rel_path="${file#$dest_cursor/}"
         local source_file="$SOURCE_CURSOR/$rel_path"
         
-        # Skip meta.json in comparison (it's managed separately)
-        if [ "$rel_path" = "meta.json" ]; then
+        # Skip meta.json, .cursorignore, and .cursorinclude in comparison (they're managed separately)
+        if [ "$rel_path" = "meta.json" ] || [ "$rel_path" = ".cursorignore" ] || [ "$rel_path" = ".cursorinclude" ]; then
             continue
         fi
         
@@ -178,7 +178,7 @@ check_for_updates() {
             updated_files+=("$rel_path")
             has_updates=true
         fi
-    done < <(find "$dest_cursor" -type f ! -name "meta.json")
+    done < <(find "$dest_cursor" -type f ! -name "meta.json" ! -name ".cursorignore" ! -name ".cursorinclude")
     
     if [ "$has_updates" = true ]; then
         echo "NEW:${new_files[*]}|UPDATED:${updated_files[*]}"
@@ -188,12 +188,175 @@ check_for_updates() {
     return 1
 }
 
+# Function to build rsync include file from .cursorinclude files
+# $1: destination directory (for source->dest sync) or source directory (for dest->source sync)
+# $2: direction - "to_dest" (default) or "from_dest"
+# Returns: path to temp include file, or empty if no include file exists
+build_include_file() {
+    local target_dir="$1"
+    local direction="${2:-to_dest}"
+    local source_include="$SOURCE_CURSOR/.cursorinclude"
+    local target_include="$target_dir/.cursor/.cursorinclude"
+    local temp_include_file
+    
+    # Check if any include file exists
+    local has_include=false
+    if [ "$direction" = "to_dest" ]; then
+        if [ -f "$source_include" ] || [ -f "$target_include" ]; then
+            has_include=true
+        fi
+    else
+        if [ -f "$target_include" ]; then
+            has_include=true
+        fi
+    fi
+    
+    if [ "$has_include" != "true" ]; then
+        echo ""
+        return
+    fi
+    
+    # Create temporary file for include patterns
+    temp_include_file=$(mktemp)
+    
+    # Always include .cursorinclude itself (but we'll exclude it later in rsync)
+    # Add patterns from source .cursorinclude if it exists
+    if [ "$direction" = "to_dest" ] && [ -f "$source_include" ]; then
+        # Read source include file, skip empty lines and comments
+        while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
+                # Remove leading/trailing whitespace
+                line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                if [ -n "$line" ]; then
+                    echo "$line" >> "$temp_include_file"
+                fi
+            fi
+        done < "$source_include"
+    fi
+    
+    # Add patterns from destination .cursorinclude if it exists
+    if [ -f "$target_include" ]; then
+        # Read destination include file, skip empty lines and comments
+        while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
+                # Remove leading/trailing whitespace
+                line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                if [ -n "$line" ]; then
+                    echo "$line" >> "$temp_include_file"
+                fi
+            fi
+        done < "$target_include"
+    fi
+    
+    # Add parent directories for each pattern (required for rsync traversal)
+    if [ -s "$temp_include_file" ]; then
+        local temp_with_parents=$(mktemp)
+        # Read from original file and build new file with parents
+        while IFS= read -r pattern || [ -n "$pattern" ]; do
+            if [ -n "$pattern" ]; then
+                echo "$pattern" >> "$temp_with_parents"
+                # Extract parent directories and add them
+                local parent="$pattern"
+                while [[ "$parent" == */* ]]; do
+                    parent="${parent%/*}"
+                    if [ -n "$parent" ]; then
+                        # Add parent directory with trailing slash for rsync
+                        echo "${parent}/" >> "$temp_with_parents"
+                    fi
+                done
+            fi
+        done < "$temp_include_file"
+        # Remove duplicates, sort, and remove empty lines
+        sort -u "$temp_with_parents" | grep -v '^[[:space:]]*$' > "$temp_include_file"
+        rm -f "$temp_with_parents"
+    fi
+    
+    echo "$temp_include_file"
+}
+
+# Function to build rsync exclude file from .cursorignore files
+# $1: destination directory (for source->dest sync) or source directory (for dest->source sync)
+# $2: direction - "to_dest" (default) or "from_dest"
+build_exclude_file() {
+    local target_dir="$1"
+    local direction="${2:-to_dest}"
+    local source_ignore="$SOURCE_CURSOR/.cursorignore"
+    local target_ignore="$target_dir/.cursor/.cursorignore"
+    local temp_exclude_file
+    
+    # Create temporary file for exclude patterns
+    temp_exclude_file=$(mktemp)
+    
+    # Always exclude .cursorignore and .cursorinclude themselves
+    echo ".cursorignore" >> "$temp_exclude_file"
+    echo ".cursorinclude" >> "$temp_exclude_file"
+    
+    if [ "$direction" = "to_dest" ]; then
+        # When syncing TO destination: use both source and destination ignore patterns
+        # Add patterns from source .cursorignore if it exists
+        if [ -f "$source_ignore" ]; then
+            # Read source ignore file, skip empty lines and comments
+            while IFS= read -r line || [ -n "$line" ]; do
+                # Skip empty lines and comments
+                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
+                    # Remove leading/trailing whitespace
+                    line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                    if [ -n "$line" ]; then
+                        echo "$line" >> "$temp_exclude_file"
+                    fi
+                fi
+            done < "$source_ignore"
+        fi
+        
+        # Add patterns from destination .cursorignore if it exists
+        if [ -f "$target_ignore" ]; then
+            # Read destination ignore file, skip empty lines and comments
+            while IFS= read -r line || [ -n "$line" ]; do
+                # Skip empty lines and comments
+                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
+                    # Remove leading/trailing whitespace
+                    line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                    if [ -n "$line" ]; then
+                        echo "$line" >> "$temp_exclude_file"
+                    fi
+                fi
+            done < "$target_ignore"
+        fi
+    else
+        # When syncing FROM destination: only use destination ignore patterns
+        if [ -f "$target_ignore" ]; then
+            # Read destination ignore file, skip empty lines and comments
+            while IFS= read -r line || [ -n "$line" ]; do
+                # Skip empty lines and comments
+                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
+                    # Remove leading/trailing whitespace
+                    line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                    if [ -n "$line" ]; then
+                        echo "$line" >> "$temp_exclude_file"
+                    fi
+                fi
+            done < "$target_ignore"
+        fi
+    fi
+    
+    # Remove duplicates and empty lines
+    if [ -s "$temp_exclude_file" ]; then
+        sort -u "$temp_exclude_file" | grep -v '^[[:space:]]*$' > "${temp_exclude_file}.sorted"
+        mv "${temp_exclude_file}.sorted" "$temp_exclude_file"
+    fi
+    
+    echo "$temp_exclude_file"
+}
+
 # Function to sync from destination to source (with permission)
 sync_dest_to_source() {
     local dest_dir="$1"
     local dest_cursor="$dest_dir/.cursor"
     local updates
     local exit_code
+    local exclude_opts
     
     updates=$(check_for_updates "$dest_dir")
     exit_code=$?
@@ -214,7 +377,19 @@ sync_dest_to_source() {
         read -r response
         if [[ "$response" =~ ^[Yy]$ ]] || [ -z "$response" ]; then
             info "Syncing from $dest_dir to source..."
-            rsync -av --update "$dest_cursor/" "$SOURCE_CURSOR/" --exclude="meta.json"
+            # Check for .cursorinclude first (whitelist mode)
+            include_file=$(build_include_file "$dest_dir" "from_dest")
+            exclude_file=$(build_exclude_file "$dest_dir" "from_dest")
+            
+            if [ -n "$include_file" ] && [ -s "$include_file" ]; then
+                # Whitelist mode: only include patterns from .cursorinclude
+                rsync -av --update --exclude="meta.json" --exclude=".cursorinclude" --include-from="$include_file" --exclude='*' "$dest_cursor/" "$SOURCE_CURSOR/"
+            else
+                # Normal mode: use exclude patterns
+                rsync -av --update --exclude="meta.json" --exclude-from="$exclude_file" "$dest_cursor/" "$SOURCE_CURSOR/"
+            fi
+            
+            rm -f "$include_file" "$exclude_file"
             success "Source updated from $dest_dir"
             return 0
         else
@@ -230,21 +405,48 @@ sync_dest_to_source() {
 sync_source_to_dest() {
     local dest_dir="$1"
     local sync_rules_only="$2"
+    local exclude_file
+    local include_file
+    
+    # Check for .cursorinclude first (whitelist mode takes precedence)
+    include_file=$(build_include_file "$dest_dir" "to_dest")
+    exclude_file=$(build_exclude_file "$dest_dir" "to_dest")
     
     if [ "$sync_rules_only" = "y" ] || [ -z "$sync_rules_only" ]; then
         # Sync only rules directory
         info "Syncing rules only to $dest_dir..."
         if [ -d "$SOURCE_CURSOR/rules" ]; then
             mkdir -p "$dest_dir/.cursor/rules"
-            rsync -av --delete "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/"
+            if [ -n "$include_file" ] && [ -s "$include_file" ]; then
+                # Whitelist mode: only include patterns from .cursorinclude
+                rsync -av --delete --exclude=".cursorinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/"
+            elif [ -s "$exclude_file" ]; then
+                # Blacklist mode: exclude patterns from .cursorignore
+                rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/"
+            else
+                # Normal mode: sync everything
+                rsync -av --delete "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/"
+            fi
         else
             warning "Rules directory not found in source, skipping..."
         fi
     else
         # Sync everything including meta.json
         info "Syncing everything to $dest_dir..."
-        rsync -av --delete "$SOURCE_CURSOR/" "$dest_dir/.cursor/"
+        if [ -n "$include_file" ] && [ -s "$include_file" ]; then
+            # Whitelist mode: only include patterns from .cursorinclude
+            rsync -av --delete --exclude=".cursorinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/" "$dest_dir/.cursor/"
+        elif [ -s "$exclude_file" ]; then
+            # Blacklist mode: exclude patterns from .cursorignore
+            rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/" "$dest_dir/.cursor/"
+        else
+            # Normal mode: sync everything
+            rsync -av --delete "$SOURCE_CURSOR/" "$dest_dir/.cursor/"
+        fi
     fi
+    
+    # Clean up temp files
+    rm -f "$exclude_file" "$include_file"
 }
 
 # Main execution
