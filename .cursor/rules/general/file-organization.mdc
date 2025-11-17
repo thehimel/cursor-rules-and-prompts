@@ -1,0 +1,72 @@
+---
+alwaysApply: true
+description: Rules for consolidating related components into single files instead of splitting them. Defines when to consolidate vs split components based on coupling and domain.
+author: Himel Das
+---
+
+# File Organization
+
+## Consolidation Principle
+
+**Keep related components in ONE file** instead of splitting into multiple files.
+
+### ✅ DO - Consolidate Related Components
+
+**Question Types** - All in one file:
+```typescript
+// ✅ Good: src/components/quiz/question-types.tsx
+export function SingleChoice() { }
+export function MultipleChoice() { }
+export function FillBlank() { }
+export function TrueFalse() { }
+export function Matching() { }
+export function QuestionRenderer() { }
+```
+
+**Views** - All in one file:
+```typescript
+// ✅ Good: src/components/quiz/views.tsx
+export function QuizIntroView() { }
+export function QuizActiveView() { }
+export function QuizResultsView() { }
+```
+
+**Wrappers** - All in one file:
+```typescript
+// ✅ Good: src/components/quiz/wrappers.tsx
+export function QuizDialogWrapper() { }
+export function QuizPageWrapper() { }
+```
+
+### ❌ DON'T - Split Related Components
+
+```typescript
+// ❌ Bad: Multiple files for related components
+src/components/quiz/question-types/
+  single-choice.tsx
+  multiple-choice.tsx
+  fill-blank.tsx
+  true-false.tsx
+  matching.tsx
+  question-renderer.tsx
+```
+
+## When to Split vs Consolidate
+
+### ✅ CONSOLIDATE when:
+- Components are used together (question types)
+- Components share the same domain (views, wrappers)
+- Components are tightly coupled
+- Components have similar imports
+
+### ✅ SPLIT when:
+- Components are from different domains
+- Components have very different dependencies
+- Component files exceed ~300 lines (consider splitting)
+
+## Benefits of Consolidation
+
+- **Fewer imports**: Import all related components from one file
+- **Easier to find**: Related code lives together
+- **Less navigation**: No jumping between many files
+- **Better cohesion**: Related functionality grouped logically

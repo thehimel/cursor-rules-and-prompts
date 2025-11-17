@@ -1,0 +1,23 @@
+---
+alwaysApply: true
+description: Rules for styling - use Tailwind CSS only, no inline styles, use CSS variables for colors, monochromic design pattern, and button icon spacing guidelines.
+author: Himel Das
+---
+
+# Styling
+
+## Tailwind Only
+- Use Tailwind CSS classes ONLY
+- NO inline styles
+- NO custom CSS unless absolutely necessary
+- Use `cn()` from `@/lib/utils` for class concatenation
+
+## Colors
+- Use CSS variables: `hsl(var(--color-name))`
+- Follow theme in `tailwind.config.js`
+- Use monochromic design pattern
+
+## Button Icon Spacing
+- DO NOT add `mr-2` or similar margin classes to icons inside buttons
+- Button component has built-in spacing between icon and text
+- Let the Button component handle spacing automatically

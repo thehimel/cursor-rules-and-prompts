@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+description: Restrictions and constraints - what not to do (inline styles, custom CSS, new UI libraries, large refactors) and what to do (minimal changes, follow patterns, reuse code).
+author: Himel Das
+---
+
+# Restrictions
+
+## Do NOT
+- ❌ Add inline styles
+- ❌ Create custom CSS files
+- ❌ Install new UI libraries
+- ❌ Use `style` prop
+- ❌ Duplicate existing components
+- ❌ Ignore project patterns
+- ❌ Make large refactors
+
+## Do
+- ✅ Minimal changes only
+- ✅ Follow existing patterns
+- ✅ Check existing code first
+- ✅ Reuse utilities and components

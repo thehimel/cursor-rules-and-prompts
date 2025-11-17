@@ -1,0 +1,73 @@
+---
+alwaysApply: true
+description: Guidelines for creating and editing SVG icons with properly centered content using mathematical calculations
+author: Himel Das
+---
+
+# SVG Icon Centering
+
+When creating or editing SVG icons, ensure the content is centered both vertically and horizontally within the viewBox.
+
+## Centering Principle
+
+Content should be positioned so its geometric center aligns with the viewBox center.
+
+## Calculation Technique
+
+### Step 1: Identify ViewBox Center
+
+For `viewBox="0 0 width height"`:
+- **Horizontal center**: `width / 2`
+- **Vertical center**: `height / 2`
+
+Example: `viewBox="0 0 2048 2048"` → center is `(1024, 1024)`
+
+### Step 2: Calculate Content Bounds
+
+Find the minimum and maximum coordinates of the content in local coordinates (before transforms):
+- `min_x`, `max_x` for horizontal bounds
+- `min_y`, `max_y` for vertical bounds
+
+### Step 3: Calculate Content Center
+
+- **Content horizontal center**: `(min_x + max_x) / 2`
+- **Content vertical center**: `(min_y + max_y) / 2`
+
+### Step 4: Calculate Required Translation
+
+When using `transform="translate(tx, ty) scale(s)"`:
+
+To center the content:
+- `tx = viewBox_center_x - (content_center_x × scale)`
+- `ty = viewBox_center_y - (content_center_y × scale)`
+
+Rearranging for translation needed:
+- `tx = viewBox_center_x - (content_center_x × s)`
+- `ty = viewBox_center_y - (content_center_y × s)`
+
+### Example Calculation
+
+Given:
+- ViewBox: `0 0 2048 2048` (center at 1024, 1024)
+- Content bounds: y from -35 to 25 (local coordinates)
+- Scale: 22
+
+Calculate:
+1. Content vertical center: `(-35 + 25) / 2 = -5`
+2. Required ty: `1024 - (-5 × 22) = 1024 + 110 = 1134`
+3. Result: `transform="translate(1024, 1134) scale(22)"`
+
+## Verification
+
+After positioning, verify centering:
+1. Calculate where content center maps to: `translate_value + (content_center × scale)`
+2. Compare with viewBox center
+3. Adjust if difference is significant
+
+## Rules
+
+- Always calculate mathematically rather than visually adjusting
+- Account for scale factors in transformations
+- Consider stroke width in bounds calculations for outline elements
+- Verify both horizontal and vertical centering independently
+- Document calculations in SVG comments when non-obvious

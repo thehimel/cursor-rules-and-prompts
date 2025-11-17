@@ -1,0 +1,60 @@
+---
+alwaysApply: true
+description: Rules for component structure, import patterns using @/ path aliases (never relative paths), import ordering, and TypeScript conventions.
+author: Himel Das
+---
+
+# Code Patterns
+
+## Component Structure
+```typescript
+import React from "react";
+
+interface ComponentProps {
+  children: React.ReactNode;
+}
+
+export function Component({ children }: ComponentProps) {
+  return <div>{children}</div>;
+}
+
+export default Component;
+```
+
+## Imports
+
+### Path Aliases
+- **ALWAYS use `@/` path alias, NEVER use relative paths**
+- Use `@/components/...` instead of `../components/...`
+- Use `@/lib/...` instead of `../../lib/...`
+- Use `@/hooks/...` instead of `../../../hooks/...`
+- **Even for same-directory imports, use `@/` NOT `./`**
+- Use `@/components/quiz/question-types/single-choice` instead of `./single-choice`
+
+### Import Order
+- React/external → internal components → types → utilities
+- Example: `import React from 'react'; import { Button } from '@/components/ui/button'; import { MyType } from '@/types';`
+
+### Examples
+
+✅ **Correct:**
+```typescript
+import { Button } from '@/components/ui/button';
+import { MyType } from '@/components/quiz/types';
+import { helper } from '@/lib/utils';
+import { SingleChoice } from '@/components/quiz/question-types/single-choice';
+```
+
+❌ **Wrong:**
+```typescript
+import { Button } from '../../../components/ui/button';
+import { MyType } from '../types';
+import { helper } from '../../lib/utils';
+import { SingleChoice } from './single-choice';  // Even same-directory should use @/
+```
+
+## General
+- TypeScript for all files
+- Functional components with hooks
+- Add `displayName` to forwarded refs
+- Use `class-variance-authority` for variants

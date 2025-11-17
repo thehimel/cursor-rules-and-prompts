@@ -1,0 +1,189 @@
+---
+alwaysApply: true
+description: Organize code with foundational/application separation and extract reusable components from context-specific wrappers
+author: Himel Das
+---
+
+# Swift Project Organization
+
+## Core Principle
+
+Separate foundational/reusable code from application-specific code:
+
+- **Foundational/Reusable Code** → Reusable across projects
+- **Application-Specific Code** → Specific to this application
+
+## Architecture Pattern
+
+Follow MVVM (Model-View-ViewModel) pattern for clear separation of concerns.
+
+## Type Definitions
+
+### Models
+
+Pure data structures representing application entities. Contain only data properties, no business logic. Use for data structures, entities from external sources, data transfer objects. Do not include business logic, operations, or state management.
+
+### Views
+
+Presentation layer components that render user interface. Contain only presentation logic, observe ViewModels for state, delegate user actions to ViewModels. Use for UI components, displaying data, visual interactions. Do not contain business logic, access services directly, or manage complex state.
+
+### ViewModels
+
+State management and business logic coordination for views. Observable for reactive updates, coordinate with services, transform models for presentation. Use for managing view state, coordinating data sources, business logic. Do not reference specific view implementations or contain presentation logic.
+
+### Services
+
+Stateless utility classes that perform operations and data management. Stateless operations, reusable across features. Use for data storage, file operations, network requests, utility functions. Do not manage resource lifecycle, maintain state, or coordinate multiple services.
+
+### Managers
+
+Stateful classes that manage lifecycle and coordinate resources. Maintain state for resources, manage object lifecycle, coordinate services. Use for window lifecycle, resource management, coordinating services. Do not perform stateless data operations or contain business logic.
+
+## Directory Structure
+
+### App-Level Organization
+
+Place app-level code at the top level of the application directory:
+
+- **Models** - Data structures used across multiple features
+- **ViewModels** - State management for app-level views
+- **Views** - App-level views and components
+- **Services** - App-level services and utilities
+
+These are shared across features and not specific to any single feature.
+
+### Feature-Level Organization
+
+All features are organized under the `Features/` directory. Every feature must follow MVVM pattern with clear separation of concerns. Bundle all feature-specific code within feature directories:
+
+- **Features/FeatureName/Models/** - Data structures specific to the feature
+- **Features/FeatureName/ViewModels/** - State management and business logic for the feature
+- **Features/FeatureName/Views/** - Views specific to the feature
+- **Features/FeatureName/Services/** - Services and utilities specific to the feature
+- **Features/FeatureName/Managers/** - Lifecycle managers and state coordinators specific to the feature
+
+All code related to a feature must stay within its feature directory. Each feature is self-contained with its own Models, ViewModels, Views, Services, and Managers following MVVM architecture.
+
+## Feature Structure Example
+
+Every feature follows this standard structure:
+
+```
+App/
+├── Features/
+│   └── FeatureName/
+│       ├── Models/
+│       │   └── FeatureModel.swift      # Feature-specific data structures
+│       ├── ViewModels/
+│       │   └── FeatureViewModel.swift  # Feature business logic and state
+│       ├── Views/
+│       │   └── FeatureView.swift       # Feature presentation layer
+│       ├── Services/
+│       │   └── FeatureService.swift    # Feature-specific services
+│       └── Managers/
+│           └── FeatureManager.swift    # Feature-specific lifecycle managers
+```
+
+**Key Principles:**
+- Each feature is self-contained with Models, ViewModels, Views, Services, Managers
+- ViewModels handle business logic, Views handle presentation, Models are pure data
+- Services are stateless operations, Managers handle lifecycle
+
+## Component Extraction Pattern
+
+### Core Principle
+
+Never embed component-specific UI logic directly in context wrappers. Always extract reusable UI components into separate files so they can be used in any context (window, popover, sheet, etc.).
+
+**Two-Layer Architecture:**
+1. **Core Component** - All UI logic and state management, context-agnostic, accepts optional dimensions
+2. **Context Wrapper** - Minimal wrapper for context-specific lifecycle, sizing, and preferences
+
+**Benefits:** Reusable across contexts (popover, window, sheet), clear separation of concerns, flexible sizing, single source of truth for UI logic
+
+### Shared Component Extraction
+
+When the same UI components appear in multiple places (e.g., settings tab and setup wizard), extract them into shared reusable components. Create dedicated files for shared components within the feature's Views directory. Pass data and callbacks through bindings and closures to maintain flexibility. This eliminates code duplication and ensures consistent behavior across all usages.
+
+## Rules
+
+### ✅ DO
+
+#### MVVM
+- Use ViewModels for state management and business logic
+- Make ViewModels conform to ObservableObject
+- Use published properties in ViewModels for reactive updates
+- Keep views thin with only presentation logic
+- Delegate user actions from views to ViewModels
+- Place app-level models in app-level Models directory
+- Place feature-specific models in feature Models directory
+- Place app-level ViewModels in app-level ViewModels directory
+- Place feature-specific ViewModels in feature ViewModels directory
+- Make services and utilities reusable across ViewModels
+
+#### Component Extraction
+- **Always extract** reusable UI components into separate files
+- Create minimal context wrappers that only handle context-specific concerns
+- Make components accept optional dimensions for flexibility
+- Keep all UI logic and state management in ViewModels
+- Extract duplicate UI sections into shared components when used in multiple places
+- Create dedicated files for shared components within the feature's Views directory
+- Use bindings and closures to pass data and actions to shared components
+
+#### Organization
+- Place app-level models, views, ViewModels, and services at the top level
+- Organize all features under the `Features/` directory
+- Bundle all feature-specific code (models, views, ViewModels, services, managers) within feature directories under `Features/`
+- Keep all code for a feature together in its feature directory
+- Follow MVVM pattern for every feature with ViewModels and Views subdirectories
+- Ensure each feature has clear separation: Models, ViewModels, Views, Services, Managers
+- Use Services for data operations and utilities
+- Use Managers for lifecycle and state coordination
+- Place reusable utilities in foundational directories
+- Place application-specific utilities in application directories
+- Keep foundational code independent of application code
+- Make foundational utilities importable by application code
+- Keep resources at the appropriate level
+
+### ❌ DON'T
+
+#### MVVM
+- Put business logic in views
+- Access services directly from views
+- Reference specific views in ViewModels
+- Mix model and ViewModel responsibilities
+- Use State in views for complex state (use ViewModels instead)
+
+#### Component Extraction
+- **Never embed** component-specific UI logic directly in context wrappers
+- **Never write** business logic in context wrappers (popover, window, sheet)
+- Create separate components for each context when extraction is possible
+- Hardcode context-specific configuration in reusable components
+- Do not duplicate UI code across multiple views when shared components can be extracted
+- Do not mix shared and context-specific logic in the same component
+
+#### Organization
+- Place feature-specific code at the app level (must be under `Features/`)
+- Split feature code across multiple locations
+- Mix app-level and feature-specific code in the same directory
+- Place app-level code inside feature directories
+- Place features directly under `App/` instead of under `Features/`
+- Create features without ViewModels or Views subdirectories
+- Mix business logic in Views instead of ViewModels
+- Share ViewModels or Views across multiple features
+- Put lifecycle managers in Services directory (use Managers directory instead)
+- Put data storage services in Managers directory (use Services directory instead)
+- Mix foundational and application-specific code
+- Place application-specific logic in foundational utilities
+- Place reusable utilities in application directories
+- Create dependencies from foundational code to application code
+- Include application-specific types or data in foundational code
+
+## Benefits
+
+- **Reusability**: Foundational code can be extracted for other projects
+- **Clear boundaries**: Easy to identify what's reusable vs application-specific
+- **Maintainability**: Clear separation makes code easier to understand and modify
+- **Template-friendly**: Foundation code serves as a reusable template
+- **Scalability**: Easy to add new features without affecting foundational code
+- **Component flexibility**: Core components can be reused in multiple contexts without modification

@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+description: Rules for library selection - prefer popular, well-maintained libraries over custom code. Research and use battle-tested solutions before writing custom implementations.
+author: Himel Das
+---
+
+# Libraries & Dependencies
+
+## Library Selection
+- Use popular, well-maintained libraries over custom code
+- Choose the best/most popular library for each specific purpose
+- Minimal custom implementation - utilize community solutions
+- Research and use battle-tested solutions
+
+## Before Writing Custom Code
+1. Check if a popular library exists
+2. Verify it's actively maintained
+3. Confirm it's the best solution for the purpose
+4. Only write custom code if no suitable library exists
+
+## Examples
+- Authentication → use established auth libraries
+- Form validation → use popular validation libraries
+- State management → use proven state libraries
+- API clients → use well-known HTTP clients

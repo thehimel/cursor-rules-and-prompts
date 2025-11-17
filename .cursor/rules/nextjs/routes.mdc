@@ -1,0 +1,37 @@
+---
+alwaysApply: true
+description: Rules for route management - all URL routes must be defined as constants in @/lib/routes.ts, never hardcode URLs, use descriptive names and type safety.
+author: Himel Das
+---
+
+# Routes & URLs
+
+## Route Constants
+- ALL URL routes MUST be defined as constants first
+- Store route constants in `@/lib/routes.ts`
+- NEVER hardcode URLs directly in components or API calls
+
+## Pattern
+```typescript
+export const API_ROUTES = {
+  CATEGORY: {
+    ENDPOINT_NAME: '/api/category/endpoint',
+  }
+} as const;
+```
+
+## Usage
+```typescript
+// ✅ Good
+import { API_ROUTES } from '@/lib/routes';
+fetch(API_ROUTES.GOOGLE.DRIVE_PROXY);
+
+// ❌ Bad
+fetch('/api/google/drive-proxy');
+```
+
+## Rules
+- Define route constant before using it
+- Use descriptive, uppercase names
+- Group by feature/category
+- Use `as const` for type safety

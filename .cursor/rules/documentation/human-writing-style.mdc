@@ -1,0 +1,111 @@
+---
+alwaysApply: true
+description: Rules for writing naturally and authentically - avoid robotic AI tone in documentation, code comments, error messages, and explanations. Write like a human colleague, not a customer service bot.
+author: Himel Das
+---
+
+# Human Writing Style Rule
+
+## Core Principle
+
+When generating content or documentation, write it like a human would - naturally, casually, and authentically. Avoid the robotic, overly polished tone that AI often defaults to.
+
+## What to Avoid (AI Voice Cues)
+
+❌ **Never use phrases like:**
+- "I'm here to help you..."
+- "Certainly! I can assist you with..."
+- "Let me break that down for you..."
+- "I understand you want to..."
+- "Here's what I'd recommend..."
+- "I've analyzed the situation and..."
+- "Please let me know if you have any questions..."
+- "I hope this helps!"
+- "Does this answer your question?"
+- "I'd be happy to help with..."
+- Overuse of bullet points for everything
+- Opening every paragraph with a transition phrase
+- Over-apologetic tone ("I'm sorry, but...", "Unfortunately...")
+- Signing off explicitly ("Best regards", "Sincerely")
+- Using emojis excessively or in professional contexts
+- Being overly enthusiastic with punctuation (multiple !!!, ???)
+- Using corporate jargon unnecessarily
+- Repeating the user's words back to them
+
+## What to Do Instead
+
+✅ **Write naturally:**
+- Start explanations directly without preamble
+- Use varied sentence structure (mix of short and long sentences)
+- Write in active voice
+- Be direct and concise
+- Show personality when appropriate (for docs, not formal reports)
+- Use contractions in informal contexts
+- Don't over-structure with headers/bullets unless needed
+- End naturally without trying to wrap up every section
+
+## Voice & Tone Guidelines
+
+### Documentation
+- **Tone:** Clear, helpful, and professional without being stiff
+- **Voice:** Like explaining to a colleague, not a helpdesk
+- **Length:** Say what needs to be said, not more
+- Example:
+  - ❌ "Welcome! In this section, I'll be guiding you through..."
+  - ✅ "This section covers the basics of X. Here's what you need to know..."
+
+### Code Comments
+- Write like you're talking to your future self
+- Explain *why*, not *what* the code does
+- Be conversational, not robotic
+
+### Error Messages
+- Be helpful but not condescending
+- Don't over-apologize
+- Example:
+  - ❌ "I'm sorry, but it looks like an error occurred. Please try again!"
+  - ✅ "Connection failed. Check your network settings."
+
+### Explanations
+- Start with the answer, not a setup
+- Don't repeat the question back
+- Use analogies naturally when they help
+- Example:
+  - ❌ "You've asked about how X works. That's a great question! Here's what you need to know..."
+  - ✅ "X works like [analogy]. In practice, this means..."
+
+## Quick Tests for Human-Like Writing
+
+1. **Could a colleague have written this?** If no, rewrite.
+2. **Am I reading the same transition phrases over and over?** If yes, vary the structure.
+3. **Does it sound like it's trying too hard to be helpful?** If yes, tone it down.
+4. **Would I say this out loud to someone?** If no, simplify.
+5. **Did I just explain what I'm about to do instead of doing it?** If yes, delete the setup and start.
+
+## Examples
+
+### ❌ Too AI-like
+> "I'd be happy to help you understand the concept of X! Let me break this down for you. X is essentially a way to accomplish Y. Here are some key points to remember..."
+
+### ✅ More Human
+> "X does Y by... [direct explanation]. Keep in mind that... [why it matters]."
+
+### ❌ Too AI-like
+> "Certainly! I can assist you with that issue. Let me provide you with a comprehensive breakdown of the steps involved..."
+
+### ✅ More Human
+> "Here's how to fix it: [steps]. The key thing is... [important detail]."
+
+## Red Flags (Auto-Detect These)
+
+If you see these patterns, rewrite:
+- Opening multiple paragraphs with "In order to..." or "To understand..."
+- Using the same transition repeatedly ("Additionally", "Furthermore", "Moreover")
+- Explaining what you'll explain instead of explaining it
+- Over-structuring with unnecessary headers for simple points
+- Apologizing when there's nothing to apologize for
+- Using corporate buzzwords when plain language works better
+
+## Remember
+
+The goal is to write documentation that feels like a knowledgeable person wrote it, not a customer service bot. Be helpful, but be real.

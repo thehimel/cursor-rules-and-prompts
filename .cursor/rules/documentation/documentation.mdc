@@ -1,0 +1,68 @@
+---
+alwaysApply: true
+description: Rules for documentation structure, file naming conventions, code comments style, and linking patterns. Ensures consistent markdown organization and neutral, professional documentation.
+author: Himel Das
+---
+
+# Documentation
+
+## File Structure
+- When creating multiple md files for a feature, create a dedicated directory in `docs/`
+- Each feature directory MUST have a `README.md` file
+
+## File Naming
+- Use lowercase words separated by dashes
+- Format: `file-name.md`
+
+## Examples
+```
+docs/
+  feature-name/
+    README.md
+    setup-guide.md
+    troubleshooting.md
+```
+
+## Rules
+- ✅ Group related docs in feature directories
+- ✅ Always include README.md in feature directories
+- ✅ Use kebab-case for all md filenames
+- ❌ Don't use spaces or underscores in filenames
+- ❌ Don't use uppercase letters in filenames
+
+## Comments in Code
+- ✅ Use neutral, descriptive language
+- ✅ Focus on WHAT and WHY, not ownership
+- ❌ Don't use possessive pronouns like "your", "your project", "yours"
+- ❌ Don't use template-style placeholder language
+
+### Examples
+- ✅ Good: `// 1200x630 image in public folder`
+- ❌ Bad: `// Your 1200x630 image in public folder`
+
+## File Linking in Documentation
+- ✅ Always use markdown links when referencing files
+- ✅ Use relative paths from the current file location
+- ✅ Format: `[File Name](./relative/path/to/file.ext)]`
+- ✅ Make links descriptive and clickable
+- ❌ Don't use plain text file references without links
+- ❌ Don't use absolute paths in markdown files
+
+### Examples
+- ✅ Good: `See [schema.json](./schema.json) for full type definitions`
+- ✅ Good: `Example in [alphabets.json](./a1/alphabets.json)`
+- ❌ Bad: `See schema.json` or `See "schema.json"`
+- ❌ Bad: `See /Users/admin/project/file.json`
+
+## Code in Documentation
+- ✅ Link to actual implemented files instead of duplicating code
+- ✅ Use file references when code already exists in the codebase
+- ✅ Remove large code blocks and replace with links
+- ✅ Keep only concise snippets or pseudocode for explanation
+- ❌ Don't duplicate entire implementations from files
+- ❌ Don't copy large code blocks that are already in the codebase
+
+### Examples
+- ✅ Good: `See: [quiz-session.ts](./quiz-session.ts)`
+- ✅ Good: `Link to: [types.ts](/src/components/quiz/types.ts)`
+- ❌ Bad: Copying 200 lines of code that already exist in a file

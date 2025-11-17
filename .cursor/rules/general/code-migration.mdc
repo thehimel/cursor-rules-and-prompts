@@ -1,0 +1,51 @@
+---
+alwaysApply: true
+description: Guidelines for ensuring all references are updated when moving files or directories. Covers code references, configuration files, documentation, and verification steps.
+author: Himel Das
+---
+
+# Code Migration
+
+When moving files or directories, ensure all references are updated.
+
+## Move Files
+
+- Move files or directories to the new location
+- Verify the new structure
+
+## Update Code References
+
+- Search and update all imports, includes, and requires to the new path
+- Check internal imports within moved files
+- Verify no circular dependencies are introduced
+
+## Configuration Files
+
+- Update build tool configurations
+- Update compiler and linter configurations
+- Update path aliases and module resolution settings
+- Update include and exclude patterns
+
+## Documentation
+
+- Update README files
+- Update documentation files
+- Update code examples
+- Update file structure references
+
+## Verification
+
+- Search for old path references
+- Search for new path references and verify they exist
+- Ensure build or compilation succeeds
+- Verify no errors or warnings
+- Confirm the application functions correctly
+
+## Success Criteria
+
+- All references updated
+- Configuration files verified
+- Documentation updated
+- No broken linkages
+- Build succeeds
+- Application works correctly

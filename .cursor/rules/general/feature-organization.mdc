@@ -1,0 +1,74 @@
+---
+alwaysApply: true
+description: Rules for organizing feature code in single directories. All feature-related code (types, hooks, components, utils) must be grouped together in one feature directory.
+author: Himel Das
+---
+
+# Feature Organization
+
+## Core Principle
+
+When implementing a feature, ALL related code must be in ONE directory:
+
+```
+src/components/feature-name/
+├── types.ts              # All TypeScript interfaces for this feature
+├── hooks/
+│   ├── useFeature.ts     # Custom hooks
+│   └── useFeatureState.ts
+├── components/
+│   ├── FeatureComponent.tsx
+│   └── FeatureWrapper.tsx
+├── utils/
+│   ├── featureHelpers.ts
+│   └── featureConstants.ts
+├── data/
+│   └── featureData.json  # If feature has its own data files
+└── index.ts              # Public API exports
+
+src/pages/
+└── feature-name/         # Feature-specific pages
+    ├── index.mdx
+    └── settings.mdx
+```
+
+## Rules
+
+### ✅ DO
+- Keep all feature code in one directory
+- Include types, hooks, components, utilities together
+- Use `index.ts` for clean public exports
+- Group by functionality within the feature directory
+
+### ❌ DON'T
+- Split feature code across multiple locations
+- Mix feature components with general components
+- Create separate directories for types/hooks/components of the same feature
+
+## Example: Quiz Feature
+
+```
+src/components/quiz/          # ✅ All quiz code here
+├── types.ts                  # Quiz interfaces
+├── hooks/
+│   └── useQuizSession.ts
+├── components/
+│   ├── QuizDialog.tsx
+│   └── QuizView.tsx
+└── index.ts
+
+src/pages/lessons/a1/quizzes/ # ✅ Quiz pages
+└── index.mdx
+
+data/quizzes/                  # ✅ Quiz data
+├── a1/
+│   └── alphabets.json
+└── meta.json
+```
+
+## Benefits
+
+- **Easy to find**: All feature code in one place
+- **Easy to remove**: Delete one directory to remove entire feature
+- **Easy to maintain**: Clear boundaries between features
+- **Better for team collaboration**: Clear ownership and structure

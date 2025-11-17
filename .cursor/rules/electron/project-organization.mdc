@@ -1,0 +1,87 @@
+---
+alwaysApply: true
+description: Rules for organizing Electron projects with clear separation between foundational/template code and application-specific code. Template code goes in src/, app-specific code goes in src/app/.
+author: Himel Das
+---
+
+# Electron Project Organization
+
+## Core Principle
+
+Separate foundational/template code from application-specific code:
+
+- **Foundational/Template Code** → `src/` - Reusable across Electron projects
+- **Application-Specific Code** → `src/app/` - Specific to this application
+
+## Directory Structure
+
+### Foundational Utilities (`src/utils/`)
+
+Generic utilities reusable across projects:
+
+- Platform-specific utilities (icon paths, file system helpers)
+- Framework configuration (logging, protocol handlers)
+- System integration (tray, window management, auto-updater)
+- Generic helpers that work across different applications
+
+These utilities have no dependencies on application-specific code and can be extracted for use in other projects.
+
+### Application Utilities (`src/app/utils/`)
+
+Application-specific utilities:
+
+- Feature-specific storage and data management
+- Application-specific file operations
+- Business logic specific to the application domain
+- Domain-specific helpers and validators
+
+These utilities depend on application-specific types, data structures, or business logic.
+
+### Foundational Components (`src/components/`)
+
+Global library components and shared UI:
+
+- Component library components
+- Theme providers and utilities
+- Generic UI components
+- App wrapper components
+
+These components are reusable and not tied to specific application features.
+
+### Application Components (`src/app/components/`)
+
+Application-specific components:
+
+- Feature-specific layouts
+- Domain-specific components
+- Application-specific icons and assets
+- Business logic components
+
+These components implement application-specific functionality and UI.
+
+## Rules
+
+### ✅ DO
+
+- Place reusable Electron utilities in `src/utils/`
+- Place application-specific utilities in `src/app/utils/`
+- Place library/shared components in `src/components/`
+- Place application-specific components in `src/app/components/`
+- Keep foundational code independent of application code
+- Make foundational utilities importable by application code
+
+### ❌ DON'T
+
+- Mix foundational and application-specific code
+- Place application-specific logic in foundational utilities
+- Place reusable utilities in application directories
+- Create dependencies from foundational code to application code
+- Include application-specific types or data in foundational code
+
+## Benefits
+
+- **Reusability**: Foundational code can be extracted for other projects
+- **Clear boundaries**: Easy to identify what's template vs application-specific
+- **Maintainability**: Clear separation makes code easier to understand and modify
+- **Template-friendly**: Foundation code serves as a reusable template
+- **Scalability**: Easy to add new features without affecting foundational code
