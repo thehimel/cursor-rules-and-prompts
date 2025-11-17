@@ -250,8 +250,8 @@ Create a `.syncinclude` file in your `.cursor` directory with patterns to includ
 
 ```bash
 # Example .syncinclude
-rules/
-rules/code-style/
+rules/*
+rules/code-style/*
 meta.json
 ```
 
@@ -259,7 +259,7 @@ meta.json
 
 The `.syncinclude` file uses the same pattern syntax as `.gitignore`:
 - `*.ext` - Include all files with extension `.ext`
-- `directory/` - Include entire directory
+- `directory/*` - Include entire directory and all its contents
 - `file.txt` - Include specific file
 - `# comment` - Comments (lines starting with `#` are ignored)
 - Empty lines are ignored
@@ -269,12 +269,12 @@ The `.syncinclude` file uses the same pattern syntax as `.gitignore`:
 #### Examples
 
 **Include entire directories:**
-```
+```gitignore
 # Include entire directory and all its contents
-rules/
-rules/code-style/
-rules/organization/
-prompts/
+rules/*
+rules/code-style/*
+rules/organization/*
+prompts/*
 ```
 
 **Include specific files:**
@@ -300,9 +300,9 @@ prompts/*.md
 **Combined example - include directories and files:**
 ```
 # Include entire directories
-rules/
-rules/code-style/
-prompts/
+rules/*
+rules/code-style/*
+prompts/*
 
 # Include specific files
 meta.json
@@ -316,9 +316,9 @@ config.json
 **Real-world example - sync only essential rules:**
 ```
 # Include only essential rule directories
-rules/code-style/
-rules/organization/
-rules/documentation/
+rules/code-style/*
+rules/organization/*
+rules/documentation/*
 
 # Include meta.json for version tracking
 meta.json
@@ -326,14 +326,14 @@ meta.json
 
 #### Quick Reference: Common Use Cases
 
-| Use Case | `.syncignore` Example | `.syncinclude` Example |
-|----------|------------------------|-------------------------|
-| **Exclude/Include entire directory** | `backup/` | `rules/` |
-| **Exclude/Include specific file** | `secrets.env` | `meta.json` |
-| **Exclude/Include all files with extension** | `*.tmp` | `*.mdc` |
-| **Exclude/Include files in subdirectory** | `temp/*.old` | `rules/**/*.mdc` |
-| **Exclude/Include multiple directories** | `backup/`<br>`temp/`<br>`cache/` | `rules/`<br>`prompts/`<br>`config/` |
-| **Exclude/Include mixed (dirs + files)** | `backup/`<br>`secrets.env`<br>`*.tmp` | `rules/`<br>`meta.json`<br>`*.mdc` |
+| Use Case                                     | `.syncignore` Example                 | `.syncinclude` Example              |
+|----------------------------------------------|---------------------------------------|-------------------------------------|
+| **Exclude/Include entire directory**         | `backup/`                             | `rules/*`                           |
+| **Exclude/Include specific file**            | `secrets.env`                         | `meta.json`                         |
+| **Exclude/Include all files with extension** | `*.tmp`                               | `*.mdc`                             |
+| **Exclude/Include files in subdirectory**    | `temp/*.old`                          | `rules/**/*.mdc`                    |
+| **Exclude/Include multiple directories**     | `backup/`<br>`temp/`<br>`cache/`      | `rules/*`<br>`prompts/*`<br>`config/*` |
+| **Exclude/Include mixed (dirs + files)**     | `backup/`<br>`secrets.env`<br>`*.tmp` | `rules/*`<br>`meta.json`<br>`*.mdc`  |
 
 #### Priority
 
