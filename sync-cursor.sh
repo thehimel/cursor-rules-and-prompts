@@ -326,8 +326,11 @@ EOF
     dest_count=0
     
     while IFS= read -r dest_dir; do
-        # Create .cursor directory if it doesn't exist
-        mkdir -p "$dest_dir/.cursor"
+        # Skip if .cursor directory doesn't exist
+        if [ ! -d "$dest_dir/.cursor" ]; then
+            info "Skipping $dest_dir (no .cursor directory)"
+            continue
+        fi
         
         sync_source_to_dest "$dest_dir" "$sync_rules_only"
         dest_count=$((dest_count + 1))
