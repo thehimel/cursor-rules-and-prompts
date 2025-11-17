@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+description: Rules for using Python virtual environments - check requirements.txt for installed libraries and use the existing virtual environment directory.
+author: Himel Das
+---
+
+# Virtual Environment
+
+## Virtual Environment Location
+
+- Check for existing virtual environment directories using conventional names (`.venv`, `venv`, `env`, `virtualenv`)
+- Use the existing virtual environment directory if found
+- Do not create new virtual environments
+- Do not modify the existing virtual environment location
+
+## Installed Libraries
+
+- Check `requirements.txt` to find libraries that are already installed
+- Before installing new libraries, verify if they are already listed in `requirements.txt`
+- Only install libraries that are not already in `requirements.txt`
+- When installing new libraries, update `requirements.txt` accordingly
+
+## Rules
+
+- ✅ Use the existing virtual environment directory
+- ✅ Check for conventional virtual environment directory names before creating new ones
+- ✅ Check `requirements.txt` before installing dependencies
+- ✅ Update `requirements.txt` when adding new dependencies
+- ❌ Do not create new virtual environments if one already exists
+- ❌ Do not install libraries that are already in `requirements.txt`
+- ❌ Do not modify the existing virtual environment location
