@@ -250,15 +250,26 @@ build_include_file() {
         done < "$target_include"
     fi
     
-    # Add parent directories for each pattern (required for rsync traversal)
+    # Process patterns: expand dir/ to dir/* and add parent directories
     if [ -s "$temp_include_file" ]; then
         local temp_with_parents=$(mktemp)
-        # Read from original file and build new file with parents
+        # Read from original file and build new file with expanded patterns
         while IFS= read -r pattern || [ -n "$pattern" ]; do
             if [ -n "$pattern" ]; then
-                echo "$pattern" >> "$temp_with_parents"
-                # Extract parent directories and add them
+                # If pattern ends with /, expand it to include all contents
+                if [[ "$pattern" == */ ]]; then
+                    # Remove trailing slash and add /* pattern
+                    local dir_pattern="${pattern%/}"
+                    echo "${dir_pattern}/*" >> "$temp_with_parents"
+                    echo "${dir_pattern}/" >> "$temp_with_parents"
+                else
+                    echo "$pattern" >> "$temp_with_parents"
+                fi
+                
+                # Extract parent directories and add them (required for rsync traversal)
                 local parent="$pattern"
+                # Remove trailing slash if present for parent extraction
+                parent="${parent%/}"
                 while [[ "$parent" == */* ]]; do
                     parent="${parent%/*}"
                     if [ -n "$parent" ]; then
