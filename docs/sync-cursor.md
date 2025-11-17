@@ -19,8 +19,8 @@ See: [sync-cursor.sh](../sync-cursor.sh)
 - **Version tracking**: Uses [meta.json](../.cursor/meta.json) to track versions
 - **Permission-based updates**: Prompts before updating source from destinations
 - **Automatic versioning**: Increments version by 0.0.1 when source is updated
-- **`.cursorignore` support**: Exclude files and patterns from syncing (like `.gitignore`)
-- **`.cursorinclude` support**: Whitelist mode - sync only specified patterns (takes precedence over `.cursorignore`)
+- **`.syncignore` support**: Exclude files and patterns from syncing (like `.gitignore`)
+- **`.syncinclude` support**: Whitelist mode - sync only specified patterns (takes precedence over `.syncignore`)
 
 ## Setup
 
@@ -80,14 +80,14 @@ Scans all destination directories for:
 - New files that don't exist in source
 - Updated files with newer modification times
 
-Excludes `meta.json`, `.cursorignore`, and `.cursorinclude` from comparison since they're managed separately.
+Excludes `meta.json`, `.syncignore`, and `.syncinclude` from comparison since they're managed separately.
 
 ### 4. Source Update (if needed)
 
 If updates are found in any destination:
 - Lists new and updated files
 - Prompts for permission before updating source
-- Syncs from destination to source (excluding `meta.json` and respecting destination's `.cursorinclude` or `.cursorignore` patterns)
+- Syncs from destination to source (excluding `meta.json` and respecting destination's `.syncinclude` or `.syncignore` patterns)
 
 ### 5. Version Increment
 
@@ -100,10 +100,10 @@ When source is updated:
 
 Syncs updated source to all destinations:
 - Skips destinations that don't have a `.cursor/` directory
-- Respects patterns from both source and destination `.cursorinclude` files (whitelist mode) or `.cursorignore` files (blacklist mode)
-- `.cursorinclude` takes precedence over `.cursorignore` when both exist
+- Respects patterns from both source and destination `.syncinclude` files (whitelist mode) or `.syncignore` files (blacklist mode)
+- `.syncinclude` takes precedence over `.syncignore` when both exist
 - Syncs based on selected mode (rules only or everything)
-- When syncing everything, includes updated `meta.json` (unless `.cursorinclude` excludes it)
+- When syncing everything, includes updated `meta.json` (unless `.syncinclude` excludes it)
 
 ## Version Tracking
 
@@ -147,27 +147,27 @@ The script supports multiple JSON parsing methods (in order of preference):
 - `meta.json` is excluded when syncing from destinations to source
 - `meta.json` is included when syncing everything from source to destinations
 - `meta.json` is excluded from update comparison checks
-- `.cursorignore` is never synced to destinations (always excluded)
-- `.cursorinclude` is never synced to destinations (always excluded)
+- `.syncignore` is never synced to destinations (always excluded)
+- `.syncinclude` is never synced to destinations (always excluded)
 
-### .cursorignore Support
+### .syncignore Support
 
-The script supports `.cursorignore` files that work like `.gitignore` for the `.cursor` directory. This allows you to exclude specific files or patterns from syncing.
+The script supports `.syncignore` files that work like `.gitignore` for the `.cursor` directory. This allows you to exclude specific files or patterns from syncing.
 
 #### How It Works
 
-1. **Source `.cursorignore`**: Patterns in `~/PycharmProjects/cursor-rules-and-prompts/.cursor/.cursorignore` are applied when syncing to destinations
-2. **Destination `.cursorignore`**: Patterns in destination `.cursor/.cursorignore` files are also respected when syncing to that destination
-3. **Combined patterns**: When syncing to destinations, patterns from both source and destination `.cursorignore` files are combined
-4. **Never synced**: The `.cursorignore` file itself is never copied to destinations
-5. **Bidirectional**: When syncing from destination to source, only the destination's `.cursorignore` patterns are used
+1. **Source `.syncignore`**: Patterns in `~/PycharmProjects/cursor-rules-and-prompts/.cursor/.syncignore` are applied when syncing to destinations
+2. **Destination `.syncignore`**: Patterns in destination `.cursor/.syncignore` files are also respected when syncing to that destination
+3. **Combined patterns**: When syncing to destinations, patterns from both source and destination `.syncignore` files are combined
+4. **Never synced**: The `.syncignore` file itself is never copied to destinations
+5. **Bidirectional**: When syncing from destination to source, only the destination's `.syncignore` patterns are used
 
 #### Usage
 
-Create a `.cursorignore` file in your `.cursor` directory with patterns to exclude:
+Create a `.syncignore` file in your `.cursor` directory with patterns to exclude:
 
 ```bash
-# Example .cursorignore
+# Example .syncignore
 *.log
 temp/
 *.cache
@@ -177,7 +177,7 @@ backup/
 
 #### Pattern Syntax
 
-The `.cursorignore` file uses the same pattern syntax as `.gitignore`:
+The `.syncignore` file uses the same pattern syntax as `.gitignore`:
 - `*.ext` - Exclude all files with extension `.ext`
 - `directory/` - Exclude entire directory
 - `file.txt` - Exclude specific file
@@ -186,45 +186,70 @@ The `.cursorignore` file uses the same pattern syntax as `.gitignore`:
 
 #### Examples
 
-**Exclude temporary files:**
+**Exclude entire directories:**
 ```
-*.tmp
-*.log
-.cache/
-```
-
-**Exclude specific directories:**
-```
+# Exclude entire directory and all its contents
 backup/
 temp/
 old-rules/
+cache/
 ```
 
 **Exclude specific files:**
 ```
+# Exclude individual files
 local-config.json
 personal-notes.md
+secrets.env
 ```
 
-### .cursorinclude Support
+**Exclude files by pattern:**
+```
+# Exclude all temporary files
+*.tmp
+*.log
+*.cache
 
-The script supports `.cursorinclude` files that act as a **whitelist** for syncing. If a `.cursorinclude` file exists in source or destination, **only** the patterns defined in it will be synced, and everything else will be skipped.
+# Exclude all files in a directory matching a pattern
+backup/*.bak
+temp/*.old
+```
+
+**Combined example - exclude directories and files:**
+```
+# Exclude directories
+backup/
+temp/
+old-rules/
+
+# Exclude specific files
+local-config.json
+secrets.env
+
+# Exclude file patterns
+*.tmp
+*.log
+```
+
+### .syncinclude Support
+
+The script supports `.syncinclude` files that act as a **whitelist** for syncing. If a `.syncinclude` file exists in source or destination, **only** the patterns defined in it will be synced, and everything else will be skipped.
 
 #### How It Works
 
-1. **Whitelist mode**: If `.cursorinclude` exists in source or destination, only patterns listed in it are synced
-2. **Takes precedence**: `.cursorinclude` takes precedence over `.cursorignore` (whitelist mode overrides blacklist mode)
-3. **Combined patterns**: When syncing to destinations, patterns from both source and destination `.cursorinclude` files are combined
-4. **Never synced**: The `.cursorinclude` file itself is never copied to destinations
-5. **Bidirectional**: When syncing from destination to source, only the destination's `.cursorinclude` patterns are used
+1. **Whitelist mode**: If `.syncinclude` exists in source or destination, only patterns listed in it are synced
+2. **Takes precedence**: `.syncinclude` takes precedence over `.syncignore` (whitelist mode overrides blacklist mode)
+3. **Combined patterns**: When syncing to destinations, patterns from both source and destination `.syncinclude` files are combined
+4. **Never synced**: The `.syncinclude` file itself is never copied to destinations
+5. **Bidirectional**: When syncing from destination to source, only the destination's `.syncinclude` patterns are used
 6. **Parent directories**: Parent directories are automatically included to allow rsync traversal
 
 #### Usage
 
-Create a `.cursorinclude` file in your `.cursor` directory with patterns to include:
+Create a `.syncinclude` file in your `.cursor` directory with patterns to include:
 
 ```bash
-# Example .cursorinclude
+# Example .syncinclude
 rules/
 rules/code-style/
 meta.json
@@ -232,42 +257,89 @@ meta.json
 
 #### Pattern Syntax
 
-The `.cursorinclude` file uses the same pattern syntax as `.gitignore`:
+The `.syncinclude` file uses the same pattern syntax as `.gitignore`:
 - `*.ext` - Include all files with extension `.ext`
 - `directory/` - Include entire directory
 - `file.txt` - Include specific file
 - `# comment` - Comments (lines starting with `#` are ignored)
 - Empty lines are ignored
 
-**Important**: When using `.cursorinclude`, only the patterns listed will be synced. If `meta.json` is not in the include list, it won't be synced (even in "everything" mode).
+**Important**: When using `.syncinclude`, only the patterns listed will be synced. If `meta.json` is not in the include list, it won't be synced (even in "everything" mode).
 
 #### Examples
 
-**Include only specific directories:**
+**Include entire directories:**
 ```
+# Include entire directory and all its contents
 rules/
 rules/code-style/
 rules/organization/
+prompts/
 ```
 
 **Include specific files:**
 ```
+# Include individual files
 meta.json
 rules/code-style/imports.mdc
 rules/organization/file-organization.mdc
+prompts/common-prompts.md
 ```
 
-**Include with wildcards:**
+**Include files by pattern:**
 ```
+# Include all files with specific extension
+*.mdc
+*.json
+
+# Include all files in a directory matching a pattern
 rules/**/*.mdc
+prompts/*.md
+```
+
+**Combined example - include directories and files:**
+```
+# Include entire directories
+rules/
+rules/code-style/
+prompts/
+
+# Include specific files
+meta.json
+config.json
+
+# Include file patterns
+*.mdc
 *.json
 ```
 
+**Real-world example - sync only essential rules:**
+```
+# Include only essential rule directories
+rules/code-style/
+rules/organization/
+rules/documentation/
+
+# Include meta.json for version tracking
+meta.json
+```
+
+#### Quick Reference: Common Use Cases
+
+| Use Case | `.syncignore` Example | `.syncinclude` Example |
+|----------|------------------------|-------------------------|
+| **Exclude/Include entire directory** | `backup/` | `rules/` |
+| **Exclude/Include specific file** | `secrets.env` | `meta.json` |
+| **Exclude/Include all files with extension** | `*.tmp` | `*.mdc` |
+| **Exclude/Include files in subdirectory** | `temp/*.old` | `rules/**/*.mdc` |
+| **Exclude/Include multiple directories** | `backup/`<br>`temp/`<br>`cache/` | `rules/`<br>`prompts/`<br>`config/` |
+| **Exclude/Include mixed (dirs + files)** | `backup/`<br>`secrets.env`<br>`*.tmp` | `rules/`<br>`meta.json`<br>`*.mdc` |
+
 #### Priority
 
-When both `.cursorinclude` and `.cursorignore` exist:
-- **`.cursorinclude` takes precedence** - Only patterns in `.cursorinclude` are synced
-- `.cursorignore` is ignored when `.cursorinclude` is present
+When both `.syncinclude` and `.syncignore` exist:
+- **`.syncinclude` takes precedence** - Only patterns in `.syncinclude` are synced
+- `.syncignore` is ignored when `.syncinclude` is present
 
 ## Error Handling
 
