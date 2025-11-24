@@ -57,11 +57,98 @@ Add diagrams for:
 - Use descriptive labels
 - Maintain consistent styling
 
+## Subgraph Layout Guidelines
+
+### Subgraph Orientation Preference
+
+**Whenever possible, arrange subgraphs horizontally (side-by-side) rather than vertically.** This provides better use of horizontal space and is generally more readable for comparison diagrams.
+
+### Stacking Unconnected Subgraphs Vertically
+
+When you need to stack two or more unconnected subgraphs vertically (one below the other), use the following technique:
+
+**Problem:** Mermaid may render unconnected subgraphs side-by-side even when using `graph TB` (top-bottom direction).
+
+**Solution:** Add an invisible connection between subgraphs using the invisible edge syntax (`~~~`):
+
+```mermaid
+graph TB
+    subgraph "First Subgraph"
+        direction LR
+        A[Node A] --> B[Node B]
+    end
+    
+    subgraph "Second Subgraph"
+        direction LR
+        C[Node C] --> D[Node D]
+    end
+    
+    First Subgraph ~~~ Second Subgraph
+```
+
+**Key Points:**
+- Use `graph TB` for the main graph direction (top-bottom)
+- Set `direction LR` within each subgraph to keep internal nodes horizontal
+- Add invisible connection: `SubgraphName1 ~~~ SubgraphName2` (use subgraph IDs or labels)
+- The invisible edge (`~~~`) doesn't render visually but forces vertical stacking
+- This ensures the first subgraph appears on top and the second below it
+
+### Forcing Horizontal Layout Within Subgraphs
+
+When nodes within a subgraph need to be arranged horizontally but Mermaid is rendering them vertically:
+
+**Solution:** Connect the nodes sequentially with simple lines (`---`) or arrows (`-->`) to force horizontal arrangement:
+
+```mermaid
+subgraph "Event Sequence"
+    direction LR
+    EVENT1[Event 1] --- EVENT2[Event 2]
+    EVENT2 --- EVENT3[Event 3]
+    EVENT3 --- EVENT4[Event 4]
+    EVENT1 -.->|Action 1| PROCESSOR
+    EVENT2 -.->|Action 2| PROCESSOR
+    EVENT3 -.->|Action 3| OUTPUT
+    EVENT4 -.->|Action 4| OUTPUT
+end
+```
+
+**Key Points:**
+- Use `direction LR` within the subgraph
+- Connect nodes horizontally first (EVENT1 → EVENT2 → EVENT3 → EVENT4)
+- Then add connections to external nodes using dotted lines (`-.->`) to reduce visual clutter
+- The horizontal connections force the nodes to arrange left-to-right
+
+### Fixing Subgraph Titles That Appear Behind Graphs
+
+When subgraph titles are obscured or appear behind graph elements:
+
+**Problem:** Subgraph labels may be rendered behind nodes or edges, making them difficult to read.
+
+**Solution:** Add explicit title nodes at the top of each subgraph with dotted connections to the first nodes:
+
+```mermaid
+graph TB
+    subgraph "Section Title"
+        TITLE["Section Title"]
+        FIRST[First Node]
+        SECOND[Second Node]
+        
+        TITLE -.-> FIRST
+        FIRST --> SECOND
+    end
+```
+
+**Key Points:**
+- Create a title node with the same text as the subgraph label (use quotes if the text contains special characters like parentheses)
+- Connect the title node to the first content node using a dotted line (`-.->`)
+- Style the title node differently (e.g., different background color) to distinguish it from content nodes
+- This ensures the title is visible and properly positioned at the top of the subgraph
+
 ## Examples
 
 **Auto-generation configured:**
 ```markdown
-![Building Blocks Overview](diagrams/building-blocks-overview.svg)
+![Diagram Description](diagrams/diagram-name.svg)
 ```
 
 **Auto-generation NOT configured:**
