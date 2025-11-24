@@ -1,0 +1,73 @@
+---
+alwaysApply: false
+description: Guidelines for adding Mermaid diagrams to exam answers and documentation with automatic SVG generation support
+author: Himel Das
+---
+
+# Mermaid Diagrams in Documentation
+
+## Core Principle
+
+When answering questions or creating documentation that would benefit from visual diagrams, **always include corresponding Mermaid diagrams**. Diagrams should be in separate files in a `diagrams/` directory at the same level as the documentation file.
+
+## Directory Structure
+
+```
+documentation-directory/
+├── README.md (or other documentation file)
+└── diagrams/
+    ├── diagram-name.mmd
+    └── diagram-name.svg (if auto-generation is configured)
+```
+
+**Rules:**
+- Create `diagrams/` directory at the same level as the documentation file
+- Use descriptive, kebab-case names for diagram files
+- Place all related diagrams in the same `diagrams/` directory
+
+## Auto-Generation Detection
+
+Check if auto-generation is configured by looking for:
+1. `.vscode/settings.json` with `emeraldwalk.runonsave` configuration
+2. `scripts/mermaid/generate-svgs.py` script exists
+
+**If auto-generation is configured:**
+- Create `.mmd` files in `diagrams/` directory
+- Reference `.svg` files in documentation: `![Description](diagrams/diagram-name.svg)`
+- SVG files will be auto-generated when `.mmd` files are saved
+
+**If auto-generation is NOT configured:**
+- Embed Mermaid diagrams directly in markdown using ` ```mermaid ` code blocks
+
+## When to Add Diagrams
+
+Add diagrams for:
+- System architectures or component relationships
+- Data flows or process flows
+- Concept relationships
+- Sequences or workflows
+- Hierarchical structures
+- State transitions
+
+## Diagram Quality
+
+- Clear and easy to understand
+- Directly relevant to the content
+- Include all relevant components
+- Use descriptive labels
+- Maintain consistent styling
+
+## Examples
+
+**Auto-generation configured:**
+```markdown
+![Building Blocks Overview](diagrams/building-blocks-overview.svg)
+```
+
+**Auto-generation NOT configured:**
+```markdown
+```mermaid
+graph TB
+    A[Component A] --> B[Component B]
+```
+```
