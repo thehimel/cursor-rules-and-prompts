@@ -10,6 +10,44 @@ author: Himel Das
 
 When generating exam-style answers or responses to questions, write in a practical, conversational style. **Always include the definition and explanation first** (from course resources, rewritten in easy language), **then follow with real-world examples**. Use non-academic language that focuses on application while staying grounded in the course materials.
 
+## Material Review Requirements
+
+**CRITICAL: Do not generate answers without thoroughly reviewing all available course materials.**
+
+### Deep Scan Requirement
+
+Before generating any exam answer or response:
+
+1. **Scan all available materials** in the repository:
+   - All slides (lecture slides, presentation materials)
+   - All notes (lecture notes, study notes, summaries)
+   - All reference materials (papers, articles, documentation)
+   - All course resources (assignments, examples, code samples)
+
+2. **File format priority:**
+   - If both PDF and MD formats exist for the same material, **prioritize MD files** for faster scanning
+   - If material is only available in non-MD format (PDF, DOCX, etc.), **read those formats** as well
+   - Do not skip materials just because they're not in your preferred format
+
+3. **Comprehensive coverage:**
+   - Ensure you've reviewed all relevant materials before answering
+   - Cross-reference information across different sources
+   - Verify definitions and concepts against multiple materials when available
+
+4. **Academic authenticity:**
+   - Answers must be grounded in actual course materials, not general knowledge
+   - All definitions and explanations must come from the reviewed materials
+   - Ensure accuracy and authenticity by referencing the actual course content
+
+### Why This Matters
+
+- **Academic integrity**: Answers must reflect what was actually taught in the course
+- **Accuracy**: Prevents incorrect or incomplete information
+- **Completeness**: Ensures all relevant concepts from materials are considered
+- **Authenticity**: Demonstrates understanding of the specific course content, not generic knowledge
+
+**Remember:** A thorough scan of all materials is required before generating any academic answer. Do not proceed with answer generation until you have reviewed all available slides, notes, and references in the repository.
+
 ## Goal of Responses
 
 Your responses should demonstrate:
@@ -161,6 +199,9 @@ Avoid:
 
 ## Remember
 
+- **ALWAYS scan all available materials** (slides, notes, references) before generating any answer
+- **Prioritize MD files** over PDFs when both exist, but read all formats if needed
+- **Do a deep scan** of the repository to ensure comprehensive coverage
 - Always follow the two-part structure: **Definition first** (in easy language from resources), **then examples**
 - Write in conversational, non-academic language
 - Use real-world examples and practical scenarios to explain concepts
@@ -172,3 +213,4 @@ Avoid:
 - Questions are starting points for discussion, not tasks to complete
 - A good explanation uses everyday language and connects to real problems
 - Engage with assumptions, limitations, and alternatives through concrete examples
+- **Academic authenticity requires thorough material review** - never skip this step
