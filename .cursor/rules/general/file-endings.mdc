@@ -1,0 +1,102 @@
+---
+alwaysApply: true
+description: Files must end with exactly one newline character. No trailing newlines beyond the single required newline at the end of file content.
+author: Himel Das
+---
+
+# File Endings
+
+## Core Principle
+
+All files must end with **exactly one newline character** after the content. No additional trailing newlines should be present.
+
+## Rules
+
+1. Files must end with exactly one newline character (`\n`)
+2. Do not add multiple newlines at the end of files
+3. Do not omit the final newline character
+4. The newline should be the last character in the file
+
+## Examples
+
+### ✅ Correct
+
+**Code file:**
+```
+// File content here
+const example = "value";
+
+```
+
+**Markdown file:**
+```
+# Documentation Title
+
+This is the content.
+
+```
+
+**Config file:**
+```
+key1=value1
+key2=value2
+
+```
+
+**Documentation file:**
+```
+This is documentation content.
+More content here.
+
+```
+
+All files end with exactly one newline after the last line.
+
+### ❌ Incorrect
+
+**Multiple newlines:**
+```
+// File content here
+const example = "value";
+
+
+```
+
+```
+# Documentation Title
+
+This is the content.
+
+
+```
+
+File ends with multiple newlines (2+).
+
+### ❌ Incorrect
+
+**No newline:**
+```
+// File content here
+const example = "value";
+```
+
+```
+# Documentation Title
+
+This is the content.
+```
+
+File ends with no newline character.
+
+## Implementation
+
+When creating or editing files:
+- Ensure the file ends with exactly one newline character
+- Remove any extra trailing newlines
+- Add a single newline if the file is missing the final newline
+
+## Remember
+
+- One newline at the end of every file
+- No more, no less
+- This applies to all file types (code, config, documentation, etc.)
