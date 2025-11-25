@@ -1,0 +1,139 @@
+---
+alwaysApply: false
+description: Guidelines for creating short/concise versions of detailed answers
+author: Himel Das
+---
+
+# Short Answer Version Rule
+
+## Core Principle
+
+When creating short versions of detailed answers, create a **super concise version** that is short and easy to study quickly, while remaining **fully understandable** when read independently. This version provides a condensed format for quick review and study.
+
+## File Naming
+
+**Format:** Add `-short` suffix to the detailed version filename
+
+- If detailed version is `README.md` → short version is `README-short.md`
+- If detailed version is `detailed-answers.md` → short version is `detailed-answers-short.md`
+- Place in the same directory as the detailed version
+- Use the same directory structure as detailed answers
+- Keep the same file organization
+
+## Content Requirements
+
+### Length and Conciseness
+
+**Target:** Reduce content significantly (typically 50-70% reduction) while maintaining:
+- **Complete understanding** - someone reading only this version should understand the full picture
+- **Key concepts** - all essential definitions and explanations
+- **Critical examples** - simplified but meaningful real-world examples
+- **Important distinctions** - key differences and comparisons
+
+### Structure
+
+**Maintain the same structure as detailed version:**
+- Course Materials list at top
+- Same question headers (with importance stars and tick marks preserved)
+- Same diagram references (use ALL diagrams from detailed version)
+- Horizontal rules after each answer section
+
+**Content organization:**
+- Use paragraphs when needed for clarity
+- Use bullet points for lists and comparisons
+- Use tables for side-by-side comparisons (simplified)
+- Keep essential examples but make them more concise
+
+### Diagram Usage
+
+**CRITICAL:** Use **ALL the same figures/diagrams** from the detailed version:
+- Reference the exact same diagram files
+- Do NOT create any new figures for the concise version
+- Maintain all diagram references in the same positions
+- Diagrams help understanding even in concise format
+
+### Formatting Guidelines
+
+**Bold important points:**
+- **Key terms and concepts** when first introduced
+- **Critical distinctions** and differences
+- **Main characteristics** of systems, approaches, or methods
+- **Core principles** and definitions
+
+**Use emphasis strategically:**
+- Bold for definitions and key concepts
+- Italic for emphasis on specific aspects
+- Keep formatting consistent with detailed version style
+
+### Content Selection
+
+**What to include:**
+- ✅ Core definitions and explanations
+- ✅ Key characteristics and features
+- ✅ Essential differences and comparisons
+- ✅ Simplified but meaningful examples
+- ✅ Critical concepts and principles
+- ✅ Important trade-offs and considerations
+
+**What to condense or remove:**
+- ❌ Extended explanations and elaborations
+- ❌ Multiple similar examples (keep one best example)
+- ❌ Detailed step-by-step processes (summarize)
+- ❌ Extensive background information
+- ❌ Repetitive explanations
+- ❌ Overly detailed sub-sections
+
+### Writing Style
+
+**Maintain academic standards:**
+- Follow all rules from `exam-answer-format.mdc`
+- Include course materials list
+- Include inline references to lectures
+- Use neutral language (no "you")
+- Maintain conversational but professional tone
+
+**Conciseness techniques:**
+- Combine related points into single sentences
+- Use parallel structure for comparisons
+- Eliminate redundant phrases
+- Focus on essential information
+- Use clear, direct language
+
+### Example Transformation
+
+**Detailed version:**
+```
+An event is something that happened in a system. In computing, it's also the programming entity that represents that occurrence. Events are data with context - specifically, they're what you get when you take raw data and add meaning plus timing information about when and where it occurred.
+
+Think of the progression from data → information → event like this: raw data is just numbers or symbols. Add semantics and it becomes information. Add context like timestamps and location, and it becomes an event.
+```
+
+**Concise version:**
+```
+An **event** is something that happened in a system - it's **data with context** (semantics + timing information).
+
+**Progression:** **Data** → **Information** → **Event**
+```
+
+## Quality Checklist
+
+When creating concise versions, ensure:
+
+✅ Content reduced by 50-70% while maintaining understanding
+✅ All key concepts and definitions included
+✅ All diagrams from detailed version referenced
+✅ Important points are bolded
+✅ Course materials and inline references included
+✅ Horizontal rules after each answer section
+✅ Question headers with stars and tick marks preserved
+✅ Can be understood independently without detailed version
+✅ Suitable for quick study and exam preparation
+✅ Follows all academic formatting rules
+
+## Remember
+
+- **Concise but complete** - short enough for quick study, complete enough for understanding
+- **Same diagrams** - use all figures from detailed version, no new ones
+- **Bold key points** - make important concepts stand out
+- **Maintain structure** - keep same organization as detailed version
+- **Short format** - optimized for quick review and study
