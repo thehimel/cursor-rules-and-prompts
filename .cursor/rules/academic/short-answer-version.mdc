@@ -33,10 +33,21 @@ When creating short versions of detailed answers, create a **super concise versi
 ### Structure
 
 **Maintain the same structure as detailed version:**
-- Course Materials list at top
-- Same question headers (with importance stars and tick marks preserved)
+- Same header structure and organization
+- Same question headers (with any importance markers preserved)
 - Same diagram references (use ALL diagrams from detailed version)
-- Horizontal rules after each answer section
+- Same section separators (horizontal rules, etc.)
+
+**Navigation Links:**
+- **CRITICAL:** Add a navigation link at the beginning of each answer section (right after the question header)
+- **Format:** `[📖 View detailed answer](./detailed-filename.md#anchor-name)` where `detailed-filename.md` is the name of the detailed version file
+- **Anchor format:** Convert header text to anchor by:
+  - Converting to lowercase
+  - Replacing spaces with hyphens
+  - Removing special characters (?, ✓, etc.)
+  - **IMPORTANT:** If special characters are removed from the end of the header, add a trailing hyphen to the anchor
+- **Example:** If detailed version is `README.md` and header is "What is a concept? ✓✓", link becomes `[📖 View detailed answer](./README.md#what-is-a-concept-)` (note the trailing hyphen after removing ✓✓)
+- **Purpose:** Allows easy navigation from short version to corresponding detailed section
 
 **Content organization:**
 - Use paragraphs when needed for clarity
@@ -86,9 +97,9 @@ When creating short versions of detailed answers, create a **super concise versi
 ### Writing Style
 
 **Maintain academic standards:**
-- Follow all rules from `exam-answer-format.mdc`
-- Include course materials list
-- Include inline references to lectures
+- Follow all applicable academic formatting rules
+- Include source materials list if required by academic standards
+- Include inline references to sources if required
 - Use neutral language (no "you")
 - Maintain conversational but professional tone
 
@@ -103,16 +114,16 @@ When creating short versions of detailed answers, create a **super concise versi
 
 **Detailed version:**
 ```
-An event is something that happened in a system. In computing, it's also the programming entity that represents that occurrence. Events are data with context - specifically, they're what you get when you take raw data and add meaning plus timing information about when and where it occurred.
+A concept is a fundamental idea or principle in a domain. In computing, it's also the abstract representation that models real-world phenomena. Concepts are structured knowledge - specifically, they're what you get when you take raw information and add meaning plus relationships about how elements connect and interact.
 
-Think of the progression from data → information → event like this: raw data is just numbers or symbols. Add semantics and it becomes information. Add context like timestamps and location, and it becomes an event.
+Think of the progression from data → information → concept like this: raw data is just numbers or symbols. Add semantics and it becomes information. Add relationships and structure, and it becomes a concept.
 ```
 
 **Concise version:**
 ```
-An **event** is something that happened in a system - it's **data with context** (semantics + timing information).
+A **concept** is a fundamental idea in a domain - it's **structured knowledge** (semantics + relationships).
 
-**Progression:** **Data** → **Information** → **Event**
+**Progression:** **Data** → **Information** → **Concept**
 ```
 
 ## Quality Checklist
@@ -123,12 +134,13 @@ When creating concise versions, ensure:
 ✅ All key concepts and definitions included
 ✅ All diagrams from detailed version referenced
 ✅ Important points are bolded
-✅ Course materials and inline references included
-✅ Horizontal rules after each answer section
-✅ Question headers with stars and tick marks preserved
+✅ Source materials and inline references included (if required)
+✅ Section separators maintained
+✅ Question headers with any markers preserved
+✅ Navigation links added at beginning of each answer section (link to detailed version filename)
 ✅ Can be understood independently without detailed version
-✅ Suitable for quick study and exam preparation
-✅ Follows all academic formatting rules
+✅ Suitable for quick study and preparation
+✅ Follows all applicable formatting rules
 
 ## Remember
 
@@ -136,4 +148,5 @@ When creating concise versions, ensure:
 - **Same diagrams** - use all figures from detailed version, no new ones
 - **Bold key points** - make important concepts stand out
 - **Maintain structure** - keep same organization as detailed version
+- **Navigation links** - add link to detailed version at start of each answer
 - **Short format** - optimized for quick review and study
