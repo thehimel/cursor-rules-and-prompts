@@ -51,6 +51,35 @@ Convert series of related examples or points into bulleted lists:
 - Bold the key term at the start of each bullet when listing different types or examples
 - Keep list items parallel in structure
 
+### Exercise Questions and Answer Options
+
+When formatting multiple-choice questions or exercises with answer options, use checkbox symbols to indicate correct and incorrect answers:
+
+**Format:**
+- Use **`**Answer**`** as a section header (bold)
+- List all options as bullet points with checkbox symbols:
+  - ✓ (checkmark) for correct answers
+  - □ (empty box) for incorrect/unselected answers
+- Each option should be on its own line with the checkbox symbol at the start
+
+**Example:**
+```
+**Answer**
+- □ Option A
+- ✓ Option B
+- □ Option C
+- □ Option D
+
+**Explanation**: Brief explanation of why Option B is correct.
+```
+
+**Guidelines:**
+- Always include all answer options, not just the correct one
+- Use consistent checkbox symbols throughout the document
+- Place the **Answer** section immediately after the question
+- If an explanation is provided, directly incorporate it as-is after the **Answer** section
+- Use **`**Explanation**`** as a section header (bold) when including explanations
+
 ### Emphasis
 
 Use *italic* for:
@@ -80,6 +109,7 @@ When formatting documentation, ensure:
 ✅ Code snippets and technical terms use backticks
 ✅ Important distinctions are emphasized with bold or italic
 ✅ Power notations use superscript format (10⁴, N², 2ⁿ) instead of caret notation
+✅ Exercise answer options use checkbox symbols (✓ for correct, □ for incorrect)
 ✅ The text is easy to scan visually
 
 ## Examples
