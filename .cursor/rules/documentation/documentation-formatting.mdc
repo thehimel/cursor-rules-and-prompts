@@ -32,6 +32,18 @@ Use arrow notation for showing progression or relationships:
 - Use backticks for code snippets, filenames, and technical terms: `` `config.json` ``, `` `variable_name` ``
 - Use inline code for technical terms in contexts where they're code entities or data structures
 
+### Power Notation
+
+**Always use superscript format** for all power notations instead of caret notation:
+- ✅ Use: `10⁴`, `10⁵`, `N²`, `N³`, `2ⁿ`
+- ❌ Avoid: `10^4`, `10^5`, `N^2`, `N^3`, `2^N`
+
+This applies to:
+- Numeric powers: `10⁴`, `2³¹`, `10⁸`
+- Variable powers in Big O notation: `O(N²)`, `O(N³)`, `O(2ⁿ)`
+- Mathematical expressions: `N²log(N)`, `2ⁿ + N²`
+- All contexts where powers appear in documentation
+
 ### Lists
 
 Convert series of related examples or points into bulleted lists:
@@ -67,6 +79,7 @@ When formatting documentation, ensure:
 ✅ Multiple related examples are in a bulleted list
 ✅ Code snippets and technical terms use backticks
 ✅ Important distinctions are emphasized with bold or italic
+✅ Power notations use superscript format (10⁴, N², 2ⁿ) instead of caret notation
 ✅ The text is easy to scan visually
 
 ## Examples
