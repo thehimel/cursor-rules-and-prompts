@@ -1,0 +1,228 @@
+---
+description: Prompt for converting HTML files to markdown documentation with organized directory structure, automatic sequence numbering, and asset management
+author: Himel Das
+---
+
+# Convert HTML to Markdown Directory Structure
+
+## Purpose
+
+This prompt guides the conversion of HTML files into a structured markdown documentation format with organized directory structure, automatic sequence numbering, and proper asset management.
+
+## Input Requirements
+
+When using this prompt, provide:
+
+1. **HTML file** - The HTML file to be converted to markdown
+2. **Output directory** (optional) - If not provided, the output will be created in the same directory as the HTML file
+
+## Process
+
+### Directory Name Generation
+
+Generate the directory name from the HTML filename:
+
+1. Remove the `.html` extension from the filename
+2. Convert to lowercase
+3. Replace `&` with `and`
+4. Remove all special characters except spaces and hyphens
+5. Replace spaces with hyphens
+6. Replace multiple consecutive hyphens with a single hyphen
+7. Remove leading and trailing hyphens
+
+### Sequence Numbering
+
+Determine the sequence number for the directory:
+
+1. Scan the current directory for existing files and directories
+2. Identify items that start with a number followed by a hyphen (e.g., `1-`, `2-`, `3-`)
+3. Extract all sequence numbers from these items
+4. Calculate the next number: `max(existing_numbers) + 1` if numbers exist, otherwise use `1`
+5. Prepend this number to the directory name with a hyphen separator
+
+### Directory Structure Creation
+
+Create the following structure:
+
+```
+{N}-{directory-name}/
+├── README.md
+└── assets/
+    └── [image files]
+```
+
+Where:
+- `{N}` is the calculated sequence number
+- `{directory-name}` is the generated directory name from the HTML filename
+
+### HTML to Markdown Conversion
+
+Convert the HTML content to markdown:
+
+1. **Extract source URL:**
+   - Look for `<link rel="canonical" href="...">` in the HTML head
+   - If not found, check for `<!-- saved from url=... -->` comment
+   - Extract the URL and store it for adding to the markdown
+
+2. **Extract main content:**
+   - Find the main title (first `<h1>` tag)
+   - Extract content between the title and script/body closing tags
+
+3. **Process sections:**
+   - Split content by `<h2>` tags to identify sections
+   - Extract section headings and convert to markdown `##` headers
+   - Process each section's content
+
+4. **Handle images:**
+   - Find all `<img>` tags with `src` and `alt` attributes
+   - Map image filenames to their references
+   - Update image paths to point to `assets/{filename}`
+   - Copy image files from their original location to the `assets/` directory
+
+5. **Convert code blocks:**
+   - Extract `<pre>` tags and convert to markdown code blocks
+   - Clean up line numbers if present (remove leading numbers followed by letters)
+   - Use appropriate language identifier (default to `python` if not specified)
+
+6. **Convert paragraphs:**
+   - Extract `<p>` tags and convert to markdown paragraphs
+   - Convert inline `<code>` tags to markdown inline code with backticks
+   - Remove HTML tags and decode HTML entities
+   - Filter out UI elements and navigation text
+
+7. **Maintain content order:**
+   - Preserve the original order of content elements
+   - Sort extracted elements by their position in the HTML
+
+### Asset Management
+
+Handle image and asset files:
+
+1. **Identify assets:**
+   - Find all image references in the HTML (SVG, PNG, JPG, etc.)
+   - Locate the source files (typically in a `_files` directory or similar)
+
+2. **Copy to assets directory:**
+   - Create the `assets/` directory inside the output directory
+   - Copy all referenced image files to the `assets/` directory
+   - Preserve original filenames
+
+3. **Update references:**
+   - Update all image references in the markdown to use `assets/{filename}` format
+   - Ensure relative paths are correct from the README.md location
+
+### README.md Creation
+
+Create the README.md file:
+
+1. **Content structure:**
+   - Start with the main title as `# {title}`
+   - If a source URL was found, add it immediately after the title as: `[Source]({url})`
+   - Follow with sections using `## {section-title}`
+   - Insert images immediately after section headers when appropriate
+   - Include code blocks with proper syntax highlighting
+   - Maintain paragraph structure
+
+2. **Formatting:**
+   - Clean up extra newlines (replace 3+ consecutive newlines with 2)
+   - Ensure proper spacing between sections
+   - End file with exactly one newline character
+
+3. **Content cleanup:**
+   - Remove UI elements and navigation text
+   - Filter out language selector buttons and similar interface elements
+   - Preserve all actual content text
+
+## Output Format
+
+The final output should be:
+
+```
+{N}-{directory-name}/
+├── README.md          # Main markdown documentation file
+└── assets/            # Directory containing all image files
+    ├── image1.svg
+    ├── image2.svg
+    └── ...
+```
+
+## Guidelines
+
+- Always check for existing numbered directories/files to determine the next sequence number
+- Generate directory names following the specified naming convention
+- Preserve all content from the HTML while converting to markdown
+- Copy all referenced assets to the assets directory
+- Use relative paths for all image references
+- Ensure proper markdown formatting and structure
+- Remove HTML artifacts and UI elements
+- Maintain the original content order
+- End README.md with exactly one newline character
+
+## Verification
+
+Before finalizing:
+
+- Verify the directory structure is correct
+- Confirm README.md contains all content from the HTML
+- Check that all image references point to the correct files in assets/
+- Ensure all referenced images exist in the assets directory
+- Verify markdown syntax is correct
+- Confirm the file ends with exactly one newline
+
+### Content Match Verification
+
+After creating the README.md file, perform a 100% content match verification:
+
+1. **Extract text content from HTML:**
+   - Strip all HTML tags from the original HTML content
+   - Remove UI elements, navigation text, and script content
+   - Extract only the actual content text (headings, paragraphs, code)
+   - Normalize whitespace (convert multiple spaces to single, normalize newlines)
+
+2. **Extract text content from markdown:**
+   - Strip all markdown formatting from the created README.md
+   - Remove markdown syntax (headers, code blocks, images, links)
+   - Extract only the plain text content
+   - Normalize whitespace (convert multiple spaces to single, normalize newlines)
+
+3. **Compare content:**
+   - Compare the extracted text from HTML with the extracted text from markdown
+   - Check that all sentences, paragraphs, and content elements match exactly
+   - Verify no content was lost, added, or modified during conversion
+
+4. **Print verification message:**
+   - If content matches 100%: Print a success message confirming "✓ Content verification: 100% match - All content from HTML has been successfully converted to markdown"
+   - If discrepancies are found: Print a detailed message listing what differs and fix the issues before finalizing
+   - Always display the verification result before completing the task
+
+### Cleanup
+
+After successful conversion and verification:
+
+1. **Identify associated files:**
+   - Locate the HTML file that was converted
+   - Find associated directories (typically named `{html-filename}_files` or similar patterns)
+   - Identify any other files related to the HTML (same base name with different extensions)
+
+2. **Delete files and directories:**
+   - Delete the original HTML file
+   - Delete the associated files directory (e.g., `{html-filename}_files/`)
+   - Remove any other related files that were used only for the HTML version
+   - Only delete files after confirming the conversion was successful and verified
+
+3. **Verification before deletion:**
+   - Ensure the markdown conversion is complete
+   - Confirm all assets have been copied to the assets directory
+   - Verify content match is 100% before proceeding with deletion
+   - Do not delete if verification failed or if there are any issues
+
+## Remember
+
+- The directory name is derived from the HTML filename using the specified transformation rules
+- Sequence numbers are automatically calculated based on existing numbered items
+- All assets are organized in the assets subdirectory
+- The README.md file is the main documentation file
+- Image paths use relative paths from README.md to the assets directory
+- Content order and structure should match the original HTML as closely as possible
+- **Always perform content match verification and print the verification result message before completing the task**
+- **After successful conversion and verification, delete the original HTML file and its associated files directory**
