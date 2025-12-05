@@ -181,8 +181,7 @@ def convert_html_to_markdown(html_file_path, screenshot_path=None):
             # Extract filename from path
             img_name = os.path.basename(src)
             if img_name and not img_name.startswith('_'):
-                images_found.append((img_name, alt))
-                md.append(f"![{alt}](assets/{img_name})\n")
+                images_found.append((img_match.start(), img_name, alt))
         
         # Extract code blocks
         pre_pattern = r'<pre[^>]*>(.*?)</pre>'
@@ -220,15 +219,37 @@ def convert_html_to_markdown(html_file_path, screenshot_path=None):
             if para_text and len(para_text) > 10 and not para_text.startswith('Python') and not para_text.startswith('Java'):
                 paras.append((para_match.start(), para_text))
         
-        # Combine and sort
-        all_items = [(pos, 'para', text) for pos, text in paras] + [(pos, 'code', text) for pos, text in code_blocks]
+        # Combine and sort all items by position
+        all_items = ([(pos, 'image', (name, alt)) for pos, name, alt in images_found] +
+                     [(pos, 'code', text) for pos, text in code_blocks] +
+                     [(pos, 'para', text) for pos, text in paras])
         all_items.sort(key=lambda x: x[0])
         
-        for pos, item_type, text in all_items:
-            if item_type == 'para':
-                md.append(f"{text}\n")
+        # Track last item type to determine spacing
+        last_type = None
+        for pos, item_type, content in all_items:
+            # Add blank line between different types or consecutive paragraphs
+            if last_type is not None:
+                if item_type == 'para' and last_type == 'para':
+                    # Blank line between consecutive paragraphs
+                    md.append('\n')
+                elif last_type in ['image', 'code']:
+                    # Blank line after images and code blocks
+                    md.append('\n')
+                elif item_type in ['image', 'code'] and last_type == 'para':
+                    # Blank line before images and code blocks (if following paragraph)
+                    md.append('\n')
+            
+            # Add the content
+            if item_type == 'image':
+                img_name, alt = content
+                md.append(f"![{alt}](assets/{img_name})\n")
             elif item_type == 'code':
-                md.append(f"\n```python\n{text}\n```\n")
+                md.append(f"```python\n{content}\n```\n")
+            elif item_type == 'para':
+                md.append(f"{content}\n")
+            
+            last_type = item_type
     
     markdown_text = ''.join(md)
     markdown_text = re.sub(r'\n{3,}', '\n\n', markdown_text)

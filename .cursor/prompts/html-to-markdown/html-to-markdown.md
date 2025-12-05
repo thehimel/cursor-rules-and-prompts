@@ -9,7 +9,9 @@ author: Himel Das
 
 This prompt guides the conversion of HTML files into a structured markdown documentation format with organized directory structure, automatic sequence numbering, and proper asset management.
 
-**Performance Note:** For optimal speed, use the included `convert.py` script which processes the entire conversion in seconds.
+**⚡ Performance Note:** For optimal speed, use the included conversion script [convert.py](convert.py). 
+
+**File Location:** The `convert.py` script is located in the **same directory as this prompt file**. When using it, reference it as: `[convert.py](convert.py)`
 
 ## Input Requirements
 
@@ -19,14 +21,27 @@ When using this prompt, provide:
 2. **Output directory** (optional) - If not provided, the output will be created in the same directory as the HTML file
 3. **Screenshot** (optional) - A screenshot of the web page can be provided to better understand the overall layout and structure, especially helpful for accurately extracting code blocks and understanding the visual organization of content
 
-**⚡ FASTEST METHOD:** Use the Python script `convert.py` - it completes the entire conversion in seconds. Simply run: `python convert.py <html_file> [screenshot_file]`
+**⚡ FASTEST METHOD:** Use the Python script [convert.py](convert.py) located in the same directory as this prompt - it completes the entire conversion in seconds. 
+
+Simply run: `python convert.py <html_file> [screenshot_file]` from the directory containing the HTML file, or use the full path to [convert.py](convert.py) from your current location.
 
 ## Quick Start (Fast Method)
 
-**For fastest conversion, use the provided Python script:**
+**For fastest conversion, use the provided Python script [convert.py](convert.py):**
 
-1. Navigate to the directory containing the HTML file
-2. Run: `python convert.py <html_file> [screenshot_file]` (use the relative path to `convert.py` from your current directory)
+**Important:** The `convert.py` script is located in the same directory as this prompt file.
+
+1. **Option 1 - Navigate to prompt directory first:**
+   ```bash
+   cd [path-to-prompt-directory]
+   python convert.py <html_file> [screenshot_file]
+   ```
+
+2. **Option 2 - Use full path to convert.py:**
+   ```bash
+   python [path-to-prompt-directory]/convert.py <html_file> [screenshot_file]
+   ```
+
 3. The script will automatically:
    - Extract source URL
    - Generate directory name and sequence number
@@ -101,6 +116,7 @@ Convert the HTML content to markdown:
    - Map image filenames to their references
    - Update image paths to point to `assets/{filename}`
    - Copy image files from their original location to the `assets/` directory
+   - **Always add a blank line after each image** - format: `![alt](path)\n\n` (image, blank line, then next content)
 
 5. **Convert code blocks:**
    - Extract `<pre>` tags and convert to markdown code blocks
@@ -108,12 +124,14 @@ Convert the HTML content to markdown:
    - Use appropriate language identifier (default to `python` if not specified)
    - **If a screenshot is provided, use it to verify code block accuracy** - ensure code content matches what's visible in the screenshot and avoid duplicating text that appears above or below code blocks in the visual layout
    - Be careful not to include explanatory text that appears near code blocks in the HTML but is not part of the actual code
+   - **Always add a blank line after each code block** - format: ````python\ncode\n```\n\n` (code block, blank line, then next content)
 
 6. **Convert paragraphs:**
    - Extract `<p>` tags and convert to markdown paragraphs
    - Convert inline `<code>` tags to markdown inline code with backticks
    - Remove HTML tags and decode HTML entities
    - Filter out UI elements and navigation text
+   - **Always add a blank line between consecutive paragraphs** - format: `Paragraph 1\n\nParagraph 2\n\n` (paragraph, blank line, next paragraph)
 
 7. **Maintain content order:**
    - Preserve the original order of content elements
@@ -151,6 +169,9 @@ Create the README.md file:
 
 2. **Formatting:**
    - **Ensure each heading is followed by exactly one newline** (heading, blank line, then content)
+   - **Ensure paragraphs are separated by blank lines** - each paragraph should be followed by a blank line before the next paragraph or block element
+   - **Ensure images are followed by blank lines** - each image should be followed by a blank line before the next content
+   - **Ensure code blocks are followed by blank lines** - each code block should be followed by a blank line before the next content
    - Clean up extra newlines (replace 3+ consecutive newlines with 2)
    - Ensure proper spacing between sections
    - End file with exactly one newline character
@@ -182,6 +203,9 @@ The final output should be:
 - Use relative paths for all image references
 - Ensure proper markdown formatting and structure
 - **Always add a newline after headings** - format: `## Heading\n\nContent` (heading, blank line, content)
+- **Always add blank lines between paragraphs** - format: `Paragraph 1\n\nParagraph 2\n\n` (paragraph, blank line, next paragraph)
+- **Always add blank lines after images** - format: `![alt](path)\n\n` (image, blank line, next content)
+- **Always add blank lines after code blocks** - format: ````python\ncode\n```\n\n` (code block, blank line, next content)
 - Remove HTML artifacts and UI elements
 - Maintain the original content order
 - End README.md with exactly one newline character
@@ -247,6 +271,7 @@ After successful conversion and verification:
 
 ## Remember
 
+- **The `convert.py` script is in the same directory as this prompt** - reference it as `[convert.py](convert.py)`
 - The directory name is derived from the HTML filename using the specified transformation rules
 - Sequence numbers are automatically calculated based on existing numbered items
 - All assets are organized in the assets subdirectory
