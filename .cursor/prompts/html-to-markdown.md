@@ -15,6 +15,7 @@ When using this prompt, provide:
 
 1. **HTML file** - The HTML file to be converted to markdown
 2. **Output directory** (optional) - If not provided, the output will be created in the same directory as the HTML file
+3. **Screenshot** (optional) - A screenshot of the web page can be provided to better understand the overall layout and structure, especially helpful for accurately extracting code blocks and understanding the visual organization of content
 
 ## Process
 
@@ -71,7 +72,9 @@ Convert the HTML content to markdown:
 3. **Process sections:**
    - Split content by `<h2>` tags to identify sections
    - Extract section headings and convert to markdown `##` headers
+   - **Always add a newline character after each heading** (heading on one line, blank line, then content)
    - Process each section's content
+   - If a screenshot is provided, use it to verify the structure and layout, especially for code blocks
 
 4. **Handle images:**
    - Find all `<img>` tags with `src` and `alt` attributes
@@ -83,6 +86,8 @@ Convert the HTML content to markdown:
    - Extract `<pre>` tags and convert to markdown code blocks
    - Clean up line numbers if present (remove leading numbers followed by letters)
    - Use appropriate language identifier (default to `python` if not specified)
+   - **If a screenshot is provided, use it to verify code block accuracy** - ensure code content matches what's visible in the screenshot and avoid duplicating text that appears above or below code blocks in the visual layout
+   - Be careful not to include explanatory text that appears near code blocks in the HTML but is not part of the actual code
 
 6. **Convert paragraphs:**
    - Extract `<p>` tags and convert to markdown paragraphs
@@ -119,11 +124,13 @@ Create the README.md file:
    - Start with the main title as `# {title}`
    - If a source URL was found, add it immediately after the title as: `[Source]({url})`
    - Follow with sections using `## {section-title}`
+   - **Always add a newline after each heading** - headings should be followed by a blank line before the content begins
    - Insert images immediately after section headers when appropriate
    - Include code blocks with proper syntax highlighting
    - Maintain paragraph structure
 
 2. **Formatting:**
+   - **Ensure each heading is followed by exactly one newline** (heading, blank line, then content)
    - Clean up extra newlines (replace 3+ consecutive newlines with 2)
    - Ensure proper spacing between sections
    - End file with exactly one newline character
@@ -154,9 +161,11 @@ The final output should be:
 - Copy all referenced assets to the assets directory
 - Use relative paths for all image references
 - Ensure proper markdown formatting and structure
+- **Always add a newline after headings** - format: `## Heading\n\nContent` (heading, blank line, content)
 - Remove HTML artifacts and UI elements
 - Maintain the original content order
 - End README.md with exactly one newline character
+- **If a screenshot is provided, use it as a reference** to verify code block accuracy and understand the visual layout
 
 ## Verification
 
