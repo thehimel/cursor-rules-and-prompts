@@ -116,11 +116,12 @@ Convert the HTML content to markdown:
    - Map image filenames to their references
    - Update image paths to point to `assets/{filename}`
    - Copy image files from their original location to the `assets/` directory
+   - **Note:** UI elements and navigation assets should be removed manually during asset cleanup (see Asset Cleanup section)
    - **Always add a blank line after each image** - format: `![alt](path)\n\n` (image, blank line, then next content)
 
 5. **Convert code blocks:**
    - Extract `<pre>` tags and convert to markdown code blocks
-   - Clean up line numbers if present (remove leading numbers followed by letters)
+   - **Remove line numbers from code blocks** - strip leading numbers followed by letters (e.g., `1 def function()` becomes `def function()`) to clean up numbered code examples
    - Use appropriate language identifier (default to `python` if not specified)
    - **If a screenshot is provided, use it to verify code block accuracy** - ensure code content matches what's visible in the screenshot and avoid duplicating text that appears above or below code blocks in the visual layout
    - Be careful not to include explanatory text that appears near code blocks in the HTML but is not part of the actual code
@@ -147,12 +148,14 @@ Handle image and asset files:
 
 2. **Copy to assets directory:**
    - Create the `assets/` directory inside the output directory
-   - Copy all referenced image files to the `assets/` directory
+   - Copy image files to the `assets/` directory
+   - **Note:** UI elements and navigation assets should be removed manually during asset cleanup (see Asset Cleanup section)
    - Preserve original filenames
 
 3. **Update references:**
    - Update all image references in the markdown to use `assets/{filename}` format
    - Ensure relative paths are correct from the README.md location
+   - Only content images should be referenced in the markdown
 
 ### README.md Creation
 
@@ -199,13 +202,15 @@ The final output should be:
 - Always check for existing numbered directories/files to determine the next sequence number
 - Generate directory names following the specified naming convention
 - Preserve all content from the HTML while converting to markdown
-- Copy all referenced assets to the assets directory
+- **Filter out UI elements and navigation assets** - UI elements should be removed manually during asset cleanup (see Asset Cleanup section)
+- Copy only content images (diagrams, charts, illustrations) to the assets directory
 - Use relative paths for all image references
 - Ensure proper markdown formatting and structure
 - **Always add a newline after headings** - format: `## Heading\n\nContent` (heading, blank line, content)
 - **Always add blank lines between paragraphs** - format: `Paragraph 1\n\nParagraph 2\n\n` (paragraph, blank line, next paragraph)
 - **Always add blank lines after images** - format: `![alt](path)\n\n` (image, blank line, next content)
 - **Always add blank lines after code blocks** - format: ````python\ncode\n```\n\n` (code block, blank line, next content)
+- **Remove line numbers from code blocks** - strip leading numbers followed by letters (e.g., `1 def function()` becomes `def function()`)
 - Remove HTML artifacts and UI elements
 - Maintain the original content order
 - End README.md with exactly one newline character
@@ -247,6 +252,25 @@ After creating the README.md file, perform a 100% content match verification:
    - If content matches 100%: Print a success message confirming "✓ Content verification: 100% match - All content from HTML has been successfully converted to markdown"
    - If discrepancies are found: Print a detailed message listing what differs and fix the issues before finalizing
    - Always display the verification result before completing the task
+
+### Asset Cleanup
+
+After conversion, manually review and clean up the assets directory:
+
+1. **Review assets directory:**
+   - Check the `assets/` directory for UI elements and navigation assets
+   - Identify UI elements (brand logos, navigation icons, module icons, search icons, tracking files, etc.) that were copied
+   - Compare assets with images actually referenced in the markdown
+
+2. **Remove unnecessary files:**
+   - Delete any UI elements, navigation icons, or interface assets that aren't content images
+   - Keep only images that are referenced in the markdown and are actual content (diagrams, charts, illustrations, educational graphics)
+   - Remove any tracking files, placeholder images, or other non-content assets
+
+3. **Verification:**
+   - Ensure all images referenced in the markdown exist in the assets directory
+   - Confirm no UI elements remain in the assets directory
+   - Verify only content images are present
 
 ### Cleanup
 
