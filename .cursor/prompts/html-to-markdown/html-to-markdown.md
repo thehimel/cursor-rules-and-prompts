@@ -253,6 +253,10 @@ After creating the README.md file, perform a 100% content match verification:
    - If discrepancies are found: Print a detailed message listing what differs and fix the issues before finalizing
    - Always display the verification result before completing the task
 
+### Content Completeness Verification
+
+After the initial content match verification, review the generated markdown file to ensure all content has been properly converted: check for missing introductions, remove any remaining line numbers from code blocks, verify that all sections are complete (no empty sections or placeholder text), ensure tables and lists are fully populated, and confirm that all important details, examples, and explanations from the original HTML are present in the markdown.
+
 ### Asset Cleanup
 
 After conversion, manually review and clean up the assets directory:
@@ -264,8 +268,9 @@ After conversion, manually review and clean up the assets directory:
 
 2. **Remove unnecessary files:**
    - Delete any UI elements, navigation icons, or interface assets that aren't content images
-   - Keep only images that are referenced in the markdown and are actual content (diagrams, charts, illustrations, educational graphics)
+   - Keep only images that are referenced in the markdown and are actual content (diagrams, charts, illustrations, graphics)
    - Remove any tracking files, placeholder images, or other non-content assets
+   - Remove brand logos, navigation icons, and other site-specific UI elements
 
 3. **Verification:**
    - Ensure all images referenced in the markdown exist in the assets directory
@@ -303,4 +308,5 @@ After successful conversion and verification:
 - Image paths use relative paths from README.md to the assets directory
 - Content order and structure should match the original HTML as closely as possible
 - **Always perform content match verification and print the verification result message before completing the task**
+- **Always perform content completeness verification** - check for missing introductions, incomplete sections, line numbers in code blocks, incomplete tables/lists, and missing details
 - **After successful conversion and verification, delete the original HTML file and its associated files directory**
