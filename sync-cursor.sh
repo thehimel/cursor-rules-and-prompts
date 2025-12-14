@@ -356,7 +356,7 @@ sync_source_to_dest() {
             warning "Rules directory not found in source, skipping..."
         fi
     else
-        # Sync everything including meta.json
+        # Sync everything
         info "Syncing everything to $dest_dir..."
         if [ -n "$include_file" ] && [ -s "$include_file" ]; then
             # Whitelist mode: only include patterns from .syncinclude
