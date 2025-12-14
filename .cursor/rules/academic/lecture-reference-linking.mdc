@@ -1,4 +1,5 @@
 ---
+id: rule-academic-lecture-reference-linking
 alwaysApply: true
 description: Guidelines for including course materials lists and inline references when writing exam answers or documentation that references course materials
 author: Himel Das

@@ -1,4 +1,5 @@
 ---
+id: rule-general-file-organization
 alwaysApply: true
 description: Rules for consolidating related components into single files instead of splitting them. Defines when to consolidate vs split components based on coupling and domain.
 author: Himel Das

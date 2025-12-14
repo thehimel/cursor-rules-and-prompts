@@ -1,4 +1,5 @@
 ---
+id: rule-documentation-human-writing-style
 alwaysApply: true
 description: Rules for writing naturally and authentically - avoid robotic AI tone in documentation, code comments, error messages, and explanations. Write like a human colleague, not a customer service bot.
 author: Himel Das

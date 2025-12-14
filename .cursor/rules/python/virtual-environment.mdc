@@ -1,4 +1,5 @@
 ---
+id: rule-python-virtual-environment
 alwaysApply: true
 description: Rules for using Python virtual environments - check requirements.txt for installed libraries and use the existing virtual environment directory.
 author: Himel Das

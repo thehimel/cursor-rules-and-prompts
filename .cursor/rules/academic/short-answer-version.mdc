@@ -1,4 +1,5 @@
 ---
+id: rule-academic-short-answer-version
 alwaysApply: false
 description: Guidelines for creating short/concise versions of detailed answers
 author: Himel Das

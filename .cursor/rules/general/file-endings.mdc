@@ -1,4 +1,5 @@
 ---
+id: rule-general-file-endings
 alwaysApply: true
 description: Files must end with exactly one newline character. No trailing newlines beyond the single required newline at the end of file content.
 author: Himel Das

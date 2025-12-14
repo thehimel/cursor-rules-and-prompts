@@ -1,4 +1,5 @@
 ---
+id: prompt-course-structure
 author: Himel Das
 description: Guidelines for creating course chapter structure with lesson files, exercises, and directories
 ---

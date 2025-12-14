@@ -1,4 +1,5 @@
 ---
+id: rule-general-code-migration
 alwaysApply: true
 description: Guidelines for ensuring all references are updated when moving files or directories. Covers code references, configuration files, documentation, and verification steps.
 author: Himel Das

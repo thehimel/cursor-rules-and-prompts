@@ -1,4 +1,5 @@
 ---
+id: prompt-markdown-from-text-and-images
 description: Prompt for creating markdown documentation from plain text and images while preserving 100% text match and applying proper formatting
 author: Himel Das
 ---

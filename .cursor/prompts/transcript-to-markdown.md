@@ -1,4 +1,5 @@
 ---
+id: prompt-transcript-to-markdown
 author: Himel Das
 description: Guidelines for converting transcripts into well-structured markdown documents with proper formatting, emphasis, and organization
 ---

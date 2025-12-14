@@ -1,4 +1,5 @@
 ---
+id: prompt-revision-guide-generation
 author: Himel Das
 description: Guidelines for generating comprehensive revision guides from course lecture materials, extracting commands and summaries for interview preparation
 ---

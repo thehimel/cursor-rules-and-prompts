@@ -1,4 +1,5 @@
 ---
+id: rule-nextjs-routes
 alwaysApply: true
 description: Rules for route management - all URL routes must be defined as constants in @/lib/routes.ts, never hardcode URLs, use descriptive names and type safety.
 author: Himel Das

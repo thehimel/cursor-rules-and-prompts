@@ -1,4 +1,5 @@
 ---
+id: rule-meta-rule-creation
 alwaysApply: true
 description: Guidelines for creating new agent rules - categorize rules appropriately, use required frontmatter fields, keep rules concise and generic, avoid project-specific details.
 author: Himel Das
@@ -18,11 +19,24 @@ All rule files must include these fields in order:
 
 ```
 ---
+id: rule-{category}-{filename-without-ext}
 alwaysApply: true | false
 description: concise description
 author: Himel Das
 ---
 ```
+
+### ID Field
+
+- **Required**: Every rule file must have a unique `id` field
+- **Format**: `rule-{category}-{filename-without-ext}`
+  - `{category}` is the directory name (e.g., `academic`, `general`, `meta`)
+  - `{filename-without-ext}` is the filename without the `.mdc` extension
+- **Examples**:
+  - `rule-academic-copyright-and-genericity` (file: `academic/copyright-and-genericity.mdc`)
+  - `rule-meta-rule-creation` (file: `meta/rule-creation.mdc`)
+  - `rule-general-file-organization` (file: `general/file-organization.mdc`)
+- **Purpose**: Enables ID-based file matching during sync operations, allowing files to be tracked even when renamed
 
 ## Content Guidelines
 

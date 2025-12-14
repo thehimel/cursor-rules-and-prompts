@@ -1,4 +1,5 @@
 ---
+id: rule-documentation-sequential-documentation
 alwaysApply: true
 description: Rules for organizing feature documentation sequentially when implementing new features. Determines whether to use sequential numbering and folder structure based on existing documentation patterns.
 author: Himel Das

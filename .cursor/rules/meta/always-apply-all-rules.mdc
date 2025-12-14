@@ -1,4 +1,5 @@
 ---
+id: rule-meta-always-apply-all-rules
 alwaysApply: true
 description: Meta-rule ensuring all rules in .cursor/rules/ directory are always followed in every conversation and project. This rule takes precedence and ensures comprehensive rule compliance.
 author: Himel Das

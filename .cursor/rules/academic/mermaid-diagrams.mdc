@@ -1,4 +1,5 @@
 ---
+id: rule-academic-mermaid-diagrams
 alwaysApply: false
 description: Guidelines for adding Mermaid diagrams to exam answers and documentation with automatic SVG generation support
 author: Himel Das

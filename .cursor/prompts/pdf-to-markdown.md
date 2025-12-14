@@ -1,5 +1,6 @@
 ---
-Author: Himel Das
+id: prompt-pdf-to-markdown
+author: Himel Das
 ---
 
 # PDF to Markdown Conversion Prompt

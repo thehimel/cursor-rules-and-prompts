@@ -1,4 +1,5 @@
 ---
+id: rule-electron-project-organization
 alwaysApply: true
 description: Rules for organizing Electron projects with clear separation between foundational/template code and application-specific code. Template code goes in src/, app-specific code goes in src/app/.
 author: Himel Das

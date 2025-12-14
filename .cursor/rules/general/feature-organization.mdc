@@ -1,4 +1,5 @@
 ---
+id: rule-general-feature-organization
 alwaysApply: true
 description: Rules for organizing feature code in single directories. All feature-related code (types, hooks, components, utils) must be grouped together in one feature directory.
 author: Himel Das

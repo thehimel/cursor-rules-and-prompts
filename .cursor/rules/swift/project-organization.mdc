@@ -1,4 +1,5 @@
 ---
+id: rule-swift-project-organization
 alwaysApply: true
 description: Organize code with foundational/application separation and extract reusable components from context-specific wrappers
 author: Himel Das

@@ -1,4 +1,5 @@
 ---
+id: rule-general-articles-in-comments
 alwaysApply: true
 description: Enforce proper use of articles (a, an, the) in comments to maintain grammatical correctness and readability.
 author: Himel Das

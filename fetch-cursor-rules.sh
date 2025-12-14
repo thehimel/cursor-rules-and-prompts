@@ -3,14 +3,15 @@
 # Cursor Rules Sync Script
 # Syncs .cursor directory from GitHub repository to all target directories
 # One-way sync: Source -> All Destinations (respects .syncignore and .syncinclude)
+# ID-based matching: Matches files by ID first, then filename (handles renames)
 #
-# Version: 2.0.0
+# Version: 2.1.0
 # Author: Himel Das
 
 set -e
 
 # Script metadata
-SCRIPT_VERSION="2.0.0"
+SCRIPT_VERSION="2.1.0"
 
 SOURCE_REPO="https://github.com/thehimel/cursor-rules-and-prompts.git"
 SOURCE_DIR=".cursor"
@@ -154,6 +155,90 @@ is_excluded() {
     return 1  # Not excluded
 }
 
+# Function to extract ID from frontmatter in a file
+# Returns the ID if found, empty string otherwise
+extract_id_from_file() {
+    local file_path="$1"
+    
+    if [ ! -f "$file_path" ]; then
+        return 1
+    fi
+    
+    # Check if file starts with frontmatter delimiter
+    local first_line=$(head -n 1 "$file_path" 2>/dev/null)
+    if [ "$first_line" != "---" ]; then
+        return 1
+    fi
+    
+    # Extract ID from frontmatter (look for "id: value" pattern)
+    local id=$(awk '
+        /^---$/ { in_frontmatter = !in_frontmatter; next }
+        in_frontmatter && /^id:[[:space:]]*/ {
+            sub(/^id:[[:space:]]*/, "")
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+            print
+            exit
+        }
+    ' "$file_path" 2>/dev/null)
+    
+    if [ -n "$id" ]; then
+        echo "$id"
+        return 0
+    fi
+    
+    return 1
+}
+
+# Function to build ID-to-filename mapping for a directory
+# Outputs: id:filename pairs, one per line
+build_id_mapping() {
+    local dir_path="$1"
+    local relative_base="$2"
+    
+    if [ ! -d "$dir_path" ]; then
+        return
+    fi
+    
+    shopt -s nullglob dotglob
+    find "$dir_path" -type f \( -name "*.md" -o -name "*.mdc" \) | while read -r file_path; do
+        local relative_file="${file_path#$dir_path/}"
+        local relative_path="${relative_base:+$relative_base/}$relative_file"
+        
+        # Skip .syncignore and .syncinclude files
+        local filename=$(basename "$relative_file")
+        if [ "$filename" = ".syncignore" ] || [ "$filename" = ".syncinclude" ]; then
+            continue
+        fi
+        
+        local id=$(extract_id_from_file "$file_path")
+        if [ -n "$id" ]; then
+            echo "$id|$relative_path"
+        fi
+    done
+    shopt -u nullglob dotglob
+}
+
+# Function to find target file by ID
+# Returns the relative path (from base) to the target file if found, empty otherwise
+find_target_by_id() {
+    local search_id="$1"
+    local id_mapping_file="$2"
+    
+    if [ ! -f "$id_mapping_file" ]; then
+        return 1
+    fi
+    
+    # Search for the ID in the mapping
+    local matched_path=$(grep "^${search_id}|" "$id_mapping_file" 2>/dev/null | head -n 1 | cut -d'|' -f2-)
+    
+    if [ -n "$matched_path" ]; then
+        echo "$matched_path"
+        return 0
+    fi
+    
+    return 1
+}
+
 # Function to check if a path matches patterns in .syncinclude
 # Returns 0 (true) if path should be included, 1 (false) if it should be excluded
 is_included() {
@@ -217,11 +302,11 @@ is_included() {
 }
 
 # Function to sync directory recursively respecting .syncignore and .syncinclude
-# IMPORTANT: This function implements MERGE behavior:
+# IMPORTANT: This function implements MERGE behavior with ID-based matching:
+# - Files are matched by ID first, then by filename if no ID match
 # - Files/directories that exist in source are added/updated in target
-# - Files/directories that exist ONLY in target are NEVER deleted
+# - Files with matching IDs but different filenames are updated (rename handling)
 # - Source files take precedence when there's a conflict
-# - This ensures target-only files are always preserved
 sync_directory() {
     local source_path="$1"
     local dest_path="$2"
@@ -230,6 +315,8 @@ sync_directory() {
     local dest_syncignore="$5"
     local source_syncinclude="$6"
     local dest_syncinclude="$7"
+    local source_id_map="$8"
+    local dest_id_map="$9"
     
     # Check if .syncinclude exists (whitelist mode takes precedence)
     local has_include=false
@@ -317,22 +404,103 @@ sync_directory() {
         if [ -d "$source_item" ]; then
             # It's a directory, recurse
             # Note: Target-only subdirectories are preserved (we only process source items)
-            sync_directory "$source_item" "$dest_item" "$item_relative" "$source_syncignore" "$dest_syncignore" "$source_syncinclude" "$dest_syncinclude"
+            sync_directory "$source_item" "$dest_item" "$item_relative" "$source_syncignore" "$dest_syncignore" "$source_syncinclude" "$dest_syncinclude" "$source_id_map" "$dest_id_map"
         elif [ -f "$source_item" ]; then
             # It's a file from source
-            if [ -f "$dest_item" ]; then
-                # File exists in both places - update from source if different
-                # Note: We never delete the target file, we only update it if source is different
-                if cmp -s "$source_item" "$dest_item"; then
-                    echo -e "${GREEN}✓${NC} $item_relative (unchanged)"
+            local source_id=$(extract_id_from_file "$source_item")
+            local matched_dest_file=""
+            local matched_by_id=false
+            
+            # Try to match by ID first
+            if [ -n "$source_id" ] && [ -f "$dest_id_map" ]; then
+                local matched_relative=$(find_target_by_id "$source_id" "$dest_id_map")
+                if [ -n "$matched_relative" ]; then
+                    # matched_relative is from base (e.g., "rules/category/file.mdc" or "prompts/file.md")
+                    # Find .cursor directory by going up from dest_path
+                    local cursor_dir="$dest_path"
+                    while [ "$(basename "$cursor_dir")" != ".cursor" ] && [ "$cursor_dir" != "/" ] && [ "$cursor_dir" != "." ]; do
+                        cursor_dir=$(dirname "$cursor_dir")
+                    done
+                    if [ -d "$cursor_dir" ]; then
+                        matched_dest_file="$cursor_dir/$matched_relative"
+                        if [ -f "$matched_dest_file" ]; then
+                            matched_by_id=true
+                        fi
+                    fi
+                fi
+            fi
+            
+            # Determine the actual destination file path
+            if [ "$matched_by_id" = true ]; then
+                # File matched by ID - use the matched path
+                local matched_dest_path="$matched_dest_file"
+                local matched_dest_name=$(basename "$matched_dest_file")
+                
+                # If filename is different, we need to handle rename
+                if [ "$matched_dest_name" != "$item_name" ]; then
+                    echo -e "${YELLOW}🔄${NC} $item_relative (matched by ID, renaming from $matched_relative)"
+                    # Remove old file and copy with new name
+                    rm -f "$matched_dest_file"
+                    cp "$source_item" "$dest_item"
+                    echo -e "${GREEN}   ✅ Renamed and updated${NC}"
                 else
-                    echo -e "${YELLOW}⚠${NC} $item_relative (updated from source)"
+                    # Same filename, just update if different
+                    if cmp -s "$source_item" "$matched_dest_path"; then
+                        echo -e "${GREEN}✓${NC} $item_relative (unchanged, matched by ID)"
+                    else
+                        echo -e "${YELLOW}⚠${NC} $item_relative (updated from source, matched by ID)"
+                        cp "$source_item" "$matched_dest_path"
+                        echo -e "${GREEN}   ✅ Updated${NC}"
+                    fi
+                fi
+            elif [ -f "$dest_item" ]; then
+                # No ID match, but file exists with same filename
+                # Check if target has a different ID (ID was updated in source)
+                local dest_id=$(extract_id_from_file "$dest_item")
+                local id_updated=false
+                local id_added=false
+                
+                # Check for ID changes
+                if [ -n "$source_id" ] && [ -n "$dest_id" ]; then
+                    # Both have IDs - check if they're different
+                    if [ "$source_id" != "$dest_id" ]; then
+                        id_updated=true
+                    fi
+                elif [ -n "$source_id" ] && [ -z "$dest_id" ]; then
+                    # Source has ID but target doesn't - ID was added
+                    id_added=true
+                elif [ -z "$source_id" ] && [ -n "$dest_id" ]; then
+                    # Target has ID but source doesn't - ID was removed (shouldn't happen, but handle it)
+                    id_updated=true
+                fi
+                
+                # Update file if different
+                if cmp -s "$source_item" "$dest_item"; then
+                    if [ "$id_updated" = true ] || [ "$id_added" = true ]; then
+                        # File content is same but ID changed - update to sync new ID
+                        if [ "$id_added" = true ]; then
+                            echo -e "${YELLOW}🔄${NC} $item_relative (ID added: $source_id)"
+                        else
+                            echo -e "${YELLOW}🔄${NC} $item_relative (ID updated: $dest_id → $source_id)"
+                        fi
+                        cp "$source_item" "$dest_item"
+                        echo -e "${GREEN}   ✅ ID updated${NC}"
+                    else
+                        echo -e "${GREEN}✓${NC} $item_relative (unchanged)"
+                    fi
+                else
+                    if [ "$id_updated" = true ]; then
+                        echo -e "${YELLOW}🔄${NC} $item_relative (updated from source, ID changed: $dest_id → $source_id)"
+                    elif [ "$id_added" = true ]; then
+                        echo -e "${YELLOW}🔄${NC} $item_relative (updated from source, ID added: $source_id)"
+                    else
+                        echo -e "${YELLOW}⚠${NC} $item_relative (updated from source)"
+                    fi
                     cp "$source_item" "$dest_item"
                     echo -e "${GREEN}   ✅ Updated${NC}"
                 fi
             else
                 # New file in source that doesn't exist in target - add it
-                # Note: Target-only files are never processed here (we only iterate source items)
                 echo -e "${GREEN}+${NC} $item_relative (new file from source)"
                 cp "$source_item" "$dest_item"
                 echo -e "${GREEN}   ✅ Added${NC}"
@@ -341,9 +509,58 @@ sync_directory() {
     done
     shopt -u nullglob dotglob
     
-    # IMPORTANT: Files/directories that exist ONLY in target are NEVER processed or deleted
-    # This is because we only iterate over source items above
-    # This ensures merge behavior: source files take precedence, target-only files are preserved
+    # IMPORTANT: Files/directories that exist ONLY in target are NEVER processed or deleted here
+    # Cleanup of orphaned files happens after all syncing is complete
+}
+
+# Function to cleanup orphaned files in target
+# Removes files that have IDs matching source IDs but are no longer in source,
+# or files that were matched by ID but source file was removed
+cleanup_orphaned_files() {
+    local dest_dir="$1"
+    local source_id_map="$2"
+    local dest_id_map="$3"
+    
+    if [ ! -f "$dest_id_map" ]; then
+        return 0
+    fi
+    
+    echo -e "${BLUE}🧹 Cleaning up orphaned files...${NC}"
+    local cleaned_count=0
+    
+    # Find .cursor directory
+    local cursor_dir="$dest_dir"
+    if [ "$(basename "$cursor_dir")" != ".cursor" ]; then
+        cursor_dir="$dest_dir/.cursor"
+    fi
+    
+    # Process each file in target ID mapping
+    while IFS='|' read -r target_id target_relative; do
+        if [ -z "$target_id" ] || [ -z "$target_relative" ]; then
+            continue
+        fi
+        
+        local target_file="$cursor_dir/$target_relative"
+        
+        # Check if this ID exists in source
+        if [ -f "$source_id_map" ]; then
+            local source_match=$(grep "^${target_id}|" "$source_id_map" 2>/dev/null | head -n 1)
+            if [ -z "$source_match" ]; then
+                # ID exists in target but not in source - this is an orphaned file
+                if [ -f "$target_file" ]; then
+                    echo -e "${YELLOW}🗑️${NC} Removing orphaned file: $target_relative (ID: $target_id)"
+                    rm -f "$target_file"
+                    cleaned_count=$((cleaned_count + 1))
+                fi
+            fi
+        fi
+    done < "$dest_id_map"
+    
+    if [ $cleaned_count -eq 0 ]; then
+        echo -e "${GREEN}   ✅ No orphaned files found${NC}"
+    else
+        echo -e "${GREEN}   ✅ Removed $cleaned_count orphaned file(s)${NC}"
+    fi
 }
 
 # Function to sync to a destination directory
@@ -365,6 +582,31 @@ sync_to_destination() {
     local source_syncinclude="$source_cursor_dir/.syncinclude"
     local dest_syncinclude="$dest_cursor/.syncinclude"
     
+    # Build ID mappings for source and target
+    local temp_dir=$(mktemp -d)
+    local source_rules_id_map="$temp_dir/source_rules_id_map.txt"
+    local source_prompts_id_map="$temp_dir/source_prompts_id_map.txt"
+    local dest_rules_id_map="$temp_dir/dest_rules_id_map.txt"
+    local dest_prompts_id_map="$temp_dir/dest_prompts_id_map.txt"
+    
+    echo -e "${BLUE}🔍 Building ID mappings...${NC}"
+    
+    # Build source ID mappings
+    if [ -d "$source_cursor_dir/rules" ]; then
+        build_id_mapping "$source_cursor_dir/rules" "rules" > "$source_rules_id_map"
+    fi
+    if [ -d "$source_cursor_dir/prompts" ]; then
+        build_id_mapping "$source_cursor_dir/prompts" "prompts" > "$source_prompts_id_map"
+    fi
+    
+    # Build target ID mappings
+    if [ -d "$dest_cursor/rules" ]; then
+        build_id_mapping "$dest_cursor/rules" "rules" > "$dest_rules_id_map"
+    fi
+    if [ -d "$dest_cursor/prompts" ]; then
+        build_id_mapping "$dest_cursor/prompts" "prompts" > "$dest_prompts_id_map"
+    fi
+    
     # Check if prompts directory is excluded
     local sync_prompts=true
     if is_excluded "prompts" "$source_syncignore" || is_excluded "prompts" "$dest_syncignore"; then
@@ -376,7 +618,7 @@ sync_to_destination() {
     if [ -d "$source_cursor_dir/rules" ]; then
         if ! is_excluded "rules" "$source_syncignore" && ! is_excluded "rules" "$dest_syncignore"; then
             echo -e "${BLUE}📋 Syncing Rules...${NC}"
-            sync_directory "$source_cursor_dir/rules" "$dest_cursor/rules" "rules" "$source_syncignore" "$dest_syncignore" "$source_syncinclude" "$dest_syncinclude"
+            sync_directory "$source_cursor_dir/rules" "$dest_cursor/rules" "rules" "$source_syncignore" "$dest_syncignore" "$source_syncinclude" "$dest_syncinclude" "$source_rules_id_map" "$dest_rules_id_map"
         else
             echo -e "${YELLOW}⚠️  Rules directory is excluded in .syncignore, skipping.${NC}"
         fi
@@ -385,8 +627,27 @@ sync_to_destination() {
     # Sync prompts (always synced unless excluded)
     if [ "$sync_prompts" = true ] && [ -d "$source_cursor_dir/prompts" ]; then
         echo -e "${BLUE}💬 Syncing Prompts...${NC}"
-        sync_directory "$source_cursor_dir/prompts" "$dest_cursor/prompts" "prompts" "$source_syncignore" "$dest_syncignore" "$source_syncinclude" "$dest_syncinclude"
+        sync_directory "$source_cursor_dir/prompts" "$dest_cursor/prompts" "prompts" "$source_syncignore" "$dest_syncignore" "$source_syncinclude" "$dest_syncinclude" "$source_prompts_id_map" "$dest_prompts_id_map"
     fi
+    
+    # Rebuild target ID mappings after sync (in case files were renamed)
+    if [ -d "$dest_cursor/rules" ]; then
+        build_id_mapping "$dest_cursor/rules" "rules" > "$dest_rules_id_map"
+    fi
+    if [ -d "$dest_cursor/prompts" ]; then
+        build_id_mapping "$dest_cursor/prompts" "prompts" > "$dest_prompts_id_map"
+    fi
+    
+    # Cleanup orphaned files
+    if [ -f "$dest_rules_id_map" ] && [ -f "$source_rules_id_map" ]; then
+        cleanup_orphaned_files "$dest_cursor" "$source_rules_id_map" "$dest_rules_id_map"
+    fi
+    if [ "$sync_prompts" = true ] && [ -f "$dest_prompts_id_map" ] && [ -f "$source_prompts_id_map" ]; then
+        cleanup_orphaned_files "$dest_cursor" "$source_prompts_id_map" "$dest_prompts_id_map"
+    fi
+    
+    # Cleanup temp files
+    rm -rf "$temp_dir"
     
     echo ""
 }

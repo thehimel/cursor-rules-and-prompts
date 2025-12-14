@@ -1,4 +1,5 @@
 ---
+id: rule-design-svg-icon-centering
 alwaysApply: true
 description: Guidelines for creating and editing SVG icons with properly centered content using mathematical calculations
 author: Himel Das

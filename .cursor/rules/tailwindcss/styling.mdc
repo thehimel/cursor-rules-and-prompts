@@ -1,4 +1,5 @@
 ---
+id: rule-tailwindcss-styling
 alwaysApply: true
 description: Rules for styling - use Tailwind CSS only, no inline styles, use CSS variables for colors, monochromic design pattern, and button icon spacing guidelines.
 author: Himel Das

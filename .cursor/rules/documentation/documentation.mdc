@@ -1,4 +1,5 @@
 ---
+id: rule-documentation-documentation
 alwaysApply: true
 description: Rules for documentation structure, file naming conventions, code comments style, and linking patterns. Ensures consistent markdown organization and neutral, professional documentation.
 author: Himel Das

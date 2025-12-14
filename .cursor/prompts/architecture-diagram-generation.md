@@ -1,4 +1,5 @@
 ---
+id: prompt-architecture-diagram-generation
 description: Prompt for generating comprehensive architectural diagrams using Mermaid syntax for any software project
 author: Himel Das
 ---

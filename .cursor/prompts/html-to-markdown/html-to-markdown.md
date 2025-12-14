@@ -1,4 +1,5 @@
 ---
+id: prompt-html-to-markdown
 description: Prompt for converting HTML files to markdown documentation with organized directory structure, automatic sequence numbering, and asset management
 author: Himel Das
 ---

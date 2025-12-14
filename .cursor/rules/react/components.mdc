@@ -1,4 +1,5 @@
 ---
+id: rule-react-components
 alwaysApply: true
 description: Rules for component usage - which component libraries are allowed (shadcn/ui, Aceternity, Kibo, Magic UI, etc.), reuse over recreation, table implementation standards, and component modularization for both new features and existing components.
 author: Himel Das
