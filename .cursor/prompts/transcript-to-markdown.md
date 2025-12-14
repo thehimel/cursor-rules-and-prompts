@@ -5,7 +5,7 @@ description: Guidelines for converting transcripts into well-structured markdown
 
 # Transcript to Markdown Conversion Prompt
 
-Transform transcripts (provided as text or via file) into well-structured markdown documents following these guidelines.
+Transform transcripts (provided as text or via file) into well-structured markdown documents following these guidelines. If additional resources such as slide PDFs, presentation materials, or supplementary content are provided along with the transcript, combine all resources with the transcript to generate a comprehensive output.
 
 ## Transformation Guidelines
 
@@ -39,7 +39,16 @@ Create a clear, hierarchical markdown document with:
 * Ensure technical accuracy
 * Use a clean, professional formatting style
 
-### 4. Additional Instructions
+### 4. Handling Additional Resources
+
+* If additional resources are provided (e.g., slide PDFs, presentation materials, supplementary documents), combine them with the transcript content
+* Extract relevant information from all provided resources
+* Integrate content from additional resources seamlessly into the markdown structure
+* Ensure information from slides and other materials complements and enhances the transcript content
+* Cross-reference information between transcript and additional resources to create a comprehensive document
+* Maintain consistency in formatting and structure when combining multiple sources
+
+### 5. Additional Instructions
 
 * Use code blocks or special formatting for technical terms or examples
 * Include brief explanatory notes where helpful
@@ -47,7 +56,7 @@ Create a clear, hierarchical markdown document with:
 * Always use a next-line character after a header
 * Process the transcript paying special attention to details
 
-### 5. Required Sections
+### 6. Required Sections
 
 #### Commands Section
 
@@ -57,7 +66,7 @@ At the top of the document, create a "Commands" section that lists all commands 
 
 Always keep a summary section written in points. Use unordered lists (not numeric lists) for all summaries and content.
 
-### 6. Formatting Rules
+### 7. Formatting Rules
 
 * Always use unordered lists (`*`) instead of numeric lists
 * **Line Wrapping Rule**: All text (paragraphs, list items, and summary points) should be wrapped at word boundaries to maximize line length, staying as close to 120 characters as possible. Avoid unnecessary breaks—only break when approaching the 120-character limit.
@@ -82,13 +91,14 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 
 ## Processing Workflow
 
-1. **Input**: Receive transcript as text or file
-2. **Extract Commands**: Identify and list all commands in the "Commands" section
-3. **Structure Content**: Organize into logical sections with appropriate headers
-4. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
-5. **Format**: Apply markdown formatting with proper line breaks and list formatting
-6. **Review**: Ensure all text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as possible, avoiding unnecessary breaks, and summary is in point form
-7. **Output**: Deliver a well-structured markdown document
+1. **Input**: Receive transcript as text or file, along with any additional resources (e.g., slide PDFs, presentation materials)
+2. **Combine Resources**: If additional resources are provided, extract and combine relevant content from all sources with the transcript
+3. **Extract Commands**: Identify and list all commands from the transcript and any additional resources in the "Commands" section
+4. **Structure Content**: Organize combined content into logical sections with appropriate headers
+5. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
+6. **Format**: Apply markdown formatting with proper line breaks and list formatting
+7. **Review**: Ensure all text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as possible, avoiding unnecessary breaks, and summary is in point form
+8. **Output**: Deliver a well-structured markdown document that integrates content from all provided resources
 
 ## Example Structure
 
