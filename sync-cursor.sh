@@ -6,7 +6,7 @@
 # Source: ~/PycharmProjects/cursor-rules-and-prompts/.cursor
 # Destinations: All other directories in ~/PycharmProjects/
 
-set -e  # Exit on error
+set +e  # Don't exit on error - we handle errors explicitly
 
 # Colors for output
 RED='\033[0;31m'
@@ -176,58 +176,33 @@ cleanup_orphaned_files() {
 process_id_based_matching() {
     local dest_cursor="$1"
     local source_cursor="$2"
-    
     local temp_dir=$(mktemp -d)
-    local source_rules_id_map="$temp_dir/source_rules_id_map.txt"
-    local source_prompts_id_map="$temp_dir/source_prompts_id_map.txt"
-    local dest_rules_id_map="$temp_dir/dest_rules_id_map.txt"
-    local dest_prompts_id_map="$temp_dir/dest_prompts_id_map.txt"
     
     info "Building ID mappings for ID-based matching..."
     
-    # Build source ID mappings
-    if [ -d "$source_cursor/rules" ]; then
-        build_id_mapping "$source_cursor/rules" "rules" > "$source_rules_id_map"
-    fi
-    if [ -d "$source_cursor/prompts" ]; then
-        build_id_mapping "$source_cursor/prompts" "prompts" > "$source_prompts_id_map"
-    fi
+    # Process each directory type (rules, prompts)
+    for dir_type in rules prompts; do
+        local source_dir="$source_cursor/$dir_type"
+        local dest_dir="$dest_cursor/$dir_type"
+        local source_id_map="$temp_dir/source_${dir_type}_id_map.txt"
+        local dest_id_map="$temp_dir/dest_${dir_type}_id_map.txt"
+        
+        # Build ID mappings if directories exist
+        [ -d "$source_dir" ] && build_id_mapping "$source_dir" "$dir_type" > "$source_id_map"
+        [ -d "$dest_dir" ] && build_id_mapping "$dest_dir" "$dir_type" > "$dest_id_map"
+        
+        # Process ID matching if both source and dest exist with mappings
+        if [ -d "$source_dir" ] && [ -d "$dest_dir" ] && [ -f "$source_id_map" ] && [ -f "$dest_id_map" ]; then
+            process_directory_id_matching "$source_dir" "$dest_dir" "$source_id_map" "$dest_id_map"
+            # Rebuild dest mapping after processing (in case files were renamed)
+            build_id_mapping "$dest_dir" "$dir_type" > "$dest_id_map"
+        fi
+        
+        # Cleanup orphaned files
+        [ -f "$source_id_map" ] && [ -f "$dest_id_map" ] && \
+            cleanup_orphaned_files "$dest_cursor" "$source_id_map" "$dest_id_map"
+    done
     
-    # Build target ID mappings
-    if [ -d "$dest_cursor/rules" ]; then
-        build_id_mapping "$dest_cursor/rules" "rules" > "$dest_rules_id_map"
-    fi
-    if [ -d "$dest_cursor/prompts" ]; then
-        build_id_mapping "$dest_cursor/prompts" "prompts" > "$dest_prompts_id_map"
-    fi
-    
-    # Process rules if both source and dest exist
-    if [ -d "$source_cursor/rules" ] && [ -d "$dest_cursor/rules" ] && [ -f "$source_rules_id_map" ] && [ -f "$dest_rules_id_map" ]; then
-        process_directory_id_matching "$source_cursor/rules" "$dest_cursor/rules" "$source_rules_id_map" "$dest_rules_id_map"
-    fi
-    
-    # Process prompts if both source and dest exist
-    if [ -d "$source_cursor/prompts" ] && [ -d "$dest_cursor/prompts" ] && [ -f "$source_prompts_id_map" ] && [ -f "$dest_prompts_id_map" ]; then
-        process_directory_id_matching "$source_cursor/prompts" "$dest_cursor/prompts" "$source_prompts_id_map" "$dest_prompts_id_map"
-    fi
-    
-    # Rebuild target ID mappings after processing (in case files were renamed)
-    if [ -d "$dest_cursor/rules" ]; then
-        build_id_mapping "$dest_cursor/rules" "rules" > "$dest_rules_id_map"
-    fi
-    if [ -d "$dest_cursor/prompts" ]; then
-        build_id_mapping "$dest_cursor/prompts" "prompts" > "$dest_prompts_id_map"
-    fi
-    
-    # Cleanup orphaned files
-    if [ -f "$dest_rules_id_map" ] && [ -f "$source_rules_id_map" ]; then
-        cleanup_orphaned_files "$dest_cursor" "$source_rules_id_map" "$dest_rules_id_map"
-    fi
-    if [ -f "$dest_prompts_id_map" ] && [ -f "$source_prompts_id_map" ]; then
-        cleanup_orphaned_files "$dest_cursor" "$source_prompts_id_map" "$dest_prompts_id_map"
-    fi
-    
-    # Cleanup temp files
     rm -rf "$temp_dir"
 }
 
@@ -267,74 +242,52 @@ process_directory_id_matching() {
     shopt -u nullglob dotglob
 }
 
+# Helper function to check if a file has non-comment, non-empty lines
+has_content() {
+    local file="$1"
+    [ -f "$file" ] && [ -s "$file" ] && grep -v '^[[:space:]]*#' "$file" | grep -v '^[[:space:]]*$' | grep -q .
+}
+
 # Function to check if .include file exists and has content
 has_include_patterns() {
     local target_dir="$1"
-    local source_include="$SOURCE_CURSOR/.include"
-    local target_include="$target_dir/.cursor/.include"
+    has_content "$SOURCE_CURSOR/.include" || has_content "$target_dir/.cursor/.include"
+}
+
+# Helper function to read patterns from .include file
+read_patterns() {
+    local include_file="$1"
+    local include_out="$2"
+    local exclude_out="$3"
     
-    if [ -f "$source_include" ] && [ -s "$source_include" ]; then
-        if grep -v '^[[:space:]]*#' "$source_include" | grep -v '^[[:space:]]*$' | grep -q .; then
-            return 0
+    [ ! -f "$include_file" ] && return
+    
+    while IFS= read -r line || [ -n "$line" ]; do
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [ -z "$line" ] && continue
+        
+        if [[ "$line" =~ ^! ]]; then
+            echo "${line#!}" >> "$exclude_out"
+        else
+            echo "$line" >> "$include_out"
         fi
-    fi
-    
-    if [ -f "$target_include" ] && [ -s "$target_include" ]; then
-        if grep -v '^[[:space:]]*#' "$target_include" | grep -v '^[[:space:]]*$' | grep -q .; then
-            return 0
-        fi
-    fi
-    
-    return 1
+    done < "$include_file"
 }
 
 # Function to build rsync include and exclude files from .include file
 # Patterns without ! are includes, patterns with ! prefix are excludes
 build_include_exclude_files() {
     local target_dir="$1"
-    local source_include="$SOURCE_CURSOR/.include"
-    local target_include="$target_dir/.cursor/.include"
     local include_file=$(mktemp)
     local exclude_file=$(mktemp)
     
     # Always exclude .include file itself
     echo ".include" >> "$exclude_file"
     
-    # Process source .include file
-    if [ -f "$source_include" ]; then
-        while IFS= read -r line || [ -n "$line" ]; do
-            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-            [ -z "$line" ] && continue
-            
-            if [[ "$line" =~ ^! ]]; then
-                # Exclusion pattern: remove ! prefix
-                pattern="${line#!}"
-                echo "$pattern" >> "$exclude_file"
-            else
-                # Inclusion pattern
-                echo "$line" >> "$include_file"
-            fi
-        done < "$source_include"
-    fi
-    
-    # Process target .include file
-    if [ -f "$target_include" ]; then
-        while IFS= read -r line || [ -n "$line" ]; do
-            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-            [ -z "$line" ] && continue
-            
-            if [[ "$line" =~ ^! ]]; then
-                # Exclusion pattern: remove ! prefix
-                pattern="${line#!}"
-                echo "$pattern" >> "$exclude_file"
-            else
-                # Inclusion pattern
-                echo "$line" >> "$include_file"
-            fi
-        done < "$target_include"
-    fi
+    # Process both source and target .include files
+    read_patterns "$SOURCE_CURSOR/.include" "$include_file" "$exclude_file"
+    read_patterns "$target_dir/.cursor/.include" "$include_file" "$exclude_file"
     
     # Expand patterns: add parent directories and wildcards for rsync
     # For directory patterns, recursively include all subdirectories at any depth
@@ -455,28 +408,11 @@ main() {
     
     # If a specific directory is provided, sync only to that directory
     if [ -n "$target_dir" ]; then
-        # Normalize the path (resolve relative paths, symlinks, etc.)
-        if [ ! -d "$target_dir" ]; then
-            error "Directory does not exist: $target_dir"
-            exit 1
-        fi
-        
-        # Get absolute path
+        [ ! -d "$target_dir" ] && error "Directory does not exist: $target_dir" && exit 1
         target_dir=$(cd "$target_dir" && pwd)
+        [ "$target_dir" = "$SOURCE_DIR" ] && error "Cannot sync to source directory: $target_dir" && exit 1
+        [ ! -d "$target_dir/.cursor" ] && error "Directory does not have .cursor folder: $target_dir" && exit 1
         
-        # Check if it's the source directory
-        if [ "$target_dir" = "$SOURCE_DIR" ]; then
-            error "Cannot sync to source directory: $target_dir"
-            exit 1
-        fi
-        
-        # Check if .cursor directory exists
-        if [ ! -d "$target_dir/.cursor" ]; then
-            error "Directory does not have .cursor folder: $target_dir"
-            exit 1
-        fi
-        
-        # Check if .include file exists and has content
         if ! has_include_patterns "$target_dir"; then
             warning "No .include file found or .include file is empty in $target_dir/.cursor - skipping sync"
             warning "You have not included or excluded any rules and prompts paths"
@@ -485,53 +421,39 @@ main() {
         fi
         
         info "Syncing to specific directory: $target_dir"
-        if sync_source_to_dest "$target_dir"; then
-            success "Sync completed!"
-        else
-            error "Sync failed for $target_dir"
-            exit 1
-        fi
+        sync_source_to_dest "$target_dir" && success "Sync completed!" || (error "Sync failed for $target_dir" && exit 1)
         return
     fi
     
     # Sync to all destinations
     info "Syncing source to all destinations..."
     
-    # Count total destinations first (only those with .include files)
-    local total_destinations=0
+    # Collect valid destinations (with .cursor and .include files)
+    local valid_destinations=()
     while IFS= read -r dest_dir; do
-        [ -z "$dest_dir" ] && continue
-        [ ! -d "$dest_dir/.cursor" ] && continue
-        has_include_patterns "$dest_dir" && total_destinations=$((total_destinations + 1))
+        [ -z "$dest_dir" ] || [ ! -d "$dest_dir/.cursor" ] && continue
+        has_include_patterns "$dest_dir" && valid_destinations+=("$dest_dir")
     done < <(get_destinations)
     
-    if [ $total_destinations -eq 0 ]; then
+    if [ ${#valid_destinations[@]} -eq 0 ]; then
         warning "No destination directories found with .include file or .include files are empty"
         warning "You have not included or excluded any rules and prompts paths"
         success "Sync completed!"
         return
     fi
     
-    local dest_count=0
+    local total=${#valid_destinations[@]}
     local dest_word="destination"
-    [ $total_destinations -ne 1 ] && dest_word="destinations"
+    [ $total -ne 1 ] && dest_word="destinations"
+    local count=0
     
-    while IFS= read -r dest_dir; do
-        [ -z "$dest_dir" ] && continue
-        [ ! -d "$dest_dir/.cursor" ] && info "Skipping $dest_dir (no .cursor directory)" && continue
-        
-        # Check if .include file exists and has content
-        if ! has_include_patterns "$dest_dir"; then
-            info "Skipping $dest_dir (no .include file or .include file is empty)"
-            continue
-        fi
-        
+    for dest_dir in "${valid_destinations[@]}"; do
         if sync_source_to_dest "$dest_dir"; then
-            dest_count=$((dest_count + 1))
-            info "Synced to $dest_count/$total_destinations $dest_word"
-            echo ""  # Add blank line after progress
+            count=$((count + 1))
+            info "Synced to $count/$total $dest_word"
+            echo ""
         fi
-    done < <(get_destinations)
+    done
     
     success "Sync completed!"
 }
