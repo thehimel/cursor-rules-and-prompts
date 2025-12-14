@@ -66,25 +66,31 @@ import { MyType } from '@/components/quiz/types';
 3. ✨ **That's it** - Cursor will automatically use these rules
 
 ### Option 2: Automatic Sync (Recommended)
-Use the sync script to automatically keep your `.cursor` directory updated:
+Use the sync script to automatically keep your `.cursor` directory updated across all your projects:
 
 ```bash
-# Download and run the sync script
-curl -o sync-cursor-rules.sh https://raw.githubusercontent.com/thehimel/cursor-rules-and-prompts/main/sync-cursor-rules.sh
-chmod +x sync-cursor-rules.sh
-./sync-cursor-rules.sh
+# Add alias to ~/.zshrc (or ~/.bashrc)
+alias sync-cursor="~/PycharmProjects/cursor-rules-and-prompts/sync-cursor.sh"
+
+# Reload shell configuration
+source ~/.zshrc
+
+# Run sync from any directory
+sync-cursor
 ```
 
-> 📌 **Sync Script Version:** `1.0.0`
+> 📌 **Sync Script:** `sync-cursor.sh`
 > 
-> ⚠️ **Important:** Before running the sync script, always download the latest version to ensure you have the most recent updates. The script will display its version number when run - compare it with the version shown above. If your script version is older, download the updated script first.
+> ⚠️ **Important:** The script requires a `.include` file in each destination's `.cursor/` directory to specify what to sync. See [sync-cursor.md](docs/sync-cursor.md) for detailed documentation.
 
 The script will:
-- 📋💬 Let you choose what to sync: Rules only, Prompts only, or Both
-- ✅ Copy selected files if `.cursor` doesn't exist
-- 🔄 Compare and sync files if `.cursor` already exists
-- ❓ Ask before replacing modified files
-- ➕ Automatically add new files from the repository
+- 🔄 Sync files from source to all destinations in `~/PycharmProjects/`
+- 🆔 Use ID-based matching to handle file renames and updates
+- 📁 Support path-based syncing via `.include` file
+- 🗑️ Automatically clean up orphaned files
+- 📊 Show progress for each destination
+
+> 💡 **Note:** The old `fetch-cursor-rules.sh` script is deprecated. Use `sync-cursor.sh` instead. See [sync-cursor.md](docs/sync-cursor.md) for full documentation.
 
 > 💬 The rules are organized by category and apply automatically when you're working in Cursor. No configuration needed.
 

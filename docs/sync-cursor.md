@@ -1,26 +1,24 @@
 # Cursor Rules Sync Script
 
-Syncs the `.cursor` directory from the source repository to all other projects in `~/PycharmProjects/` and any directory where the script is run from. Handles bidirectional syncing with version tracking and interactive prompts.
+Syncs the `.cursor` directory from the source repository to all other projects in `~/PycharmProjects/`. Uses path-based syncing with ID-based file matching for handling renames and updates.
 
 ## Overview
 
-The script manages synchronization of Cursor rules across multiple projects. Source directory is `~/PycharmProjects/cursor-rules-and-prompts/.cursor`. Destination directories include:
-- All other directories in `~/PycharmProjects/` (excluding source)
-- The current directory if the script is run from outside `~/PycharmProjects/`
+The script manages one-way synchronization of Cursor rules and prompts across multiple projects. Source directory is `~/PycharmProjects/cursor-rules-and-prompts/.cursor`. Destination directories are all other directories in `~/PycharmProjects/` that have both a `.cursor` directory and a `.include` file.
 
-The script can be run from anywhere in the system. If run from the source directory or from another directory within `~/PycharmProjects/`, behavior remains unchanged. If run from outside `~/PycharmProjects/`, that directory is automatically included as a destination.
+**Note**: The `fetch-cursor-rules.sh` script is deprecated and no longer used. All synchronization is handled by `sync-cursor.sh`.
 
 See: [sync-cursor.sh](../sync-cursor.sh)
 
 ## Features
 
-- **Interactive sync mode**: Choose to sync only rules or everything
-- **Bidirectional sync**: Checks destinations for updates before syncing
-- **Version tracking**: Uses [meta.json](../.cursor/meta.json) to track versions
-- **Permission-based updates**: Prompts before updating source from destinations
-- **Automatic versioning**: Increments version by 0.0.1 when source is updated
-- **`.syncignore` support**: Exclude files and patterns from syncing (like `.gitignore`)
-- **`.syncinclude` support**: Whitelist mode - sync only specified patterns (takes precedence over `.syncignore`)
+- **One-way sync**: Source → Destinations only (no bidirectional sync)
+- **Path-based syncing**: Uses `.include` file to specify what to sync (no interactive mode selection)
+- **ID-based matching**: Matches files by unique ID in frontmatter, handles renames and ID updates
+- **Recursive directory inclusion**: Automatically includes all subdirectories when a directory pattern is specified
+- **Single configuration file**: Uses `.include` file (replaces `.syncignore` and `.syncinclude`)
+- **Orphaned file cleanup**: Removes files in destinations that no longer exist in source
+- **Specific directory sync**: Can sync to a single directory by passing it as an argument
 
 ## Setup
 
@@ -41,7 +39,9 @@ Now you can run `sync-cursor` from any directory.
 
 ## Usage
 
-Run from any directory using the alias:
+### Sync to All Destinations
+
+Run from any directory:
 
 ```bash
 sync-cursor
@@ -53,350 +53,343 @@ Or run directly with the full path:
 ~/PycharmProjects/cursor-rules-and-prompts/sync-cursor.sh
 ```
 
-The script uses absolute paths and automatically detects where it's being run from. Behavior depends on the current directory:
+The script will:
+1. Find all directories in `~/PycharmProjects/` (excluding source)
+2. Only sync to directories that have both `.cursor/` directory and `.include` file
+3. Skip directories without `.cursor/` or without `.include` file (with warnings)
 
-- **From source directory** (`~/PycharmProjects/cursor-rules-and-prompts`): Normal operation, current directory is not treated as a destination
-- **From another directory in `~/PycharmProjects/`**: Normal operation, current directory is already included in destinations
-- **From outside `~/PycharmProjects/`**: Current directory is automatically added as a destination and will be synced
+### Sync to Specific Directory
+
+Pass the directory path as an argument:
+
+```bash
+sync-cursor /path/to/specific/project
+```
+
+The script will:
+1. Validate that the directory exists and has `.cursor/` directory
+2. Check for `.include` file
+3. Sync only to that directory
 
 ## How It Works
 
-### 1. Sync Mode Selection
-
-Prompts for sync type:
-- **Default (Y or blank)**: Syncs only the `rules/` directory
-- **N**: Syncs everything in `.cursor/` including `meta.json`
-
-### 2. Destination Detection
+### 1. Destination Detection
 
 The script automatically detects destination directories:
-- All directories in `~/PycharmProjects/` (excluding source)
-- Current directory if it's outside `~/PycharmProjects/`
-- **Note**: Only directories that already have a `.cursor/` directory are synced. Directories without `.cursor/` are skipped.
+- All directories in `~/PycharmProjects/` (excluding source: `cursor-rules-and-prompts`)
+- **Requirement**: Directory must have both `.cursor/` directory and `.include` file
+- Directories without `.cursor/` are skipped with info message
+- Directories without `.include` file (or empty `.include`) are skipped with warning
 
-### 3. Update Detection
+### 2. Pattern Processing
 
-Scans all destination directories for:
-- New files that don't exist in source
-- Updated files with newer modification times
+The script reads patterns from `.include` files:
+- **Source `.include`**: `~/PycharmProjects/cursor-rules-and-prompts/.cursor/.include`
+- **Destination `.include`**: `{destination}/.cursor/.include`
+- Patterns from both files are combined
+- Patterns without `!` prefix are **inclusions**
+- Patterns with `!` prefix are **exclusions**
 
-Excludes `meta.json`, `.syncignore`, and `.syncinclude` from comparison since they're managed separately.
+### 3. Pattern Expansion
 
-### 4. Source Update (if needed)
+For directory patterns (ending with `/`), the script automatically generates recursive patterns:
+- `prompts/` → includes `prompts/`, `prompts/*`, `prompts/*/`, `prompts/*/*/`, etc. (up to 20 levels deep)
+- This ensures all subdirectories are included recursively
 
-If updates are found in any destination:
-- Lists new and updated files
-- Prompts for permission before updating source
-- Syncs from destination to source (excluding `meta.json` and respecting destination's `.syncinclude` or `.syncignore` patterns)
+### 4. File Synchronization
 
-### 5. Version Increment
+Uses `rsync` with the generated include/exclude patterns:
+- **Whitelist mode**: If include patterns exist, only those are synced
+- **Blacklist mode**: If only exclude patterns exist, everything except those is synced
+- **Normal mode**: If no patterns, syncs everything (except `.include` file itself)
+- Uses `--delete` to remove files not in source
 
-When source is updated:
-- Reads current version from `meta.json`
-- Increments patch version by 1 (e.g., 1.0.0 → 1.0.1)
-- Updates `last_updated` field with current date (YYYY-MM-DD)
+### 5. ID-Based Matching
 
-### 6. Destination Sync
+After `rsync` completes, the script processes ID-based matching:
+- Extracts unique `id` from frontmatter of each file
+- Matches files by ID first, then falls back to filename
+- Handles file renames: if source file has same ID but different name, renames target file
+- Handles ID updates: if filename same but ID changed, updates the file
+- Cleans up orphaned files: removes files in destination whose IDs no longer exist in source
 
-Syncs updated source to all destinations:
-- Skips destinations that don't have a `.cursor/` directory
-- Respects patterns from both source and destination `.syncinclude` files (whitelist mode) or `.syncignore` files (blacklist mode)
-- `.syncinclude` takes precedence over `.syncignore` when both exist
-- Syncs based on selected mode (rules only or everything)
-- When syncing everything, includes updated `meta.json` (unless `.syncinclude` excludes it)
+## ID-Based File Matching
 
-## Version Tracking
+### How It Works
 
-Version is tracked in [meta.json](../.cursor/meta.json) with this structure:
+Each rule and prompt file should have a unique `id` in its frontmatter:
 
-```json
-{
-    "version": "1.0.0",
-    "last_updated": "2025-11-17"
-}
+```yaml
+---
+id: rule-academic-copyright-and-genericity
+alwaysApply: true
+description: Copyright and genericity guidelines
+author: Himel Das
+---
 ```
 
-The script automatically:
-- Creates `meta.json` with version 1.0.0 if missing
-- Increments version when source is updated
-- Updates `last_updated` date on each version increment
+The script uses this ID to:
+1. **Match files across locations**: Even if filename changes, same ID = same file
+2. **Handle renames**: If source file is renamed but ID stays same, target file is renamed
+3. **Detect ID changes**: If filename same but ID changes, file is updated
+4. **Clean up orphans**: Files in destination with IDs not in source are removed
 
-## JSON Parsing
+### ID Format
 
-The script supports multiple JSON parsing methods (in order of preference):
-1. `jq` - Most reliable, preserves formatting
-2. `python3` - Fallback option
-3. Basic `grep`/`sed` - Last resort for simple JSON
+- **Rules**: `rule-{category}-{filename-without-ext}`
+  - Example: `rule-academic-copyright-and-genericity`
+- **Prompts**: `prompt-{filename-without-ext}`
+  - Example: `prompt-architecture-diagram-generation`
 
-## Sync Behavior
+### Fallback Behavior
 
-### Rules Only Mode
-- Syncs only `rules/` directory
-- Preserves existing `meta.json` in destinations
-- Uses `rsync --delete` to remove files not in source
+If a file doesn't have an ID:
+- Script falls back to filename-based matching
+- File is still synced, but rename detection won't work
 
-### Everything Mode
-- Syncs entire `.cursor/` directory
-- Includes `meta.json` with updated version
-- Uses `rsync --delete` to match source exactly
+## .include File
 
-## File Exclusions
+The `.include` file replaces both `.syncignore` and `.syncinclude`. It uses a single file where:
+- Patterns without `!` are **inclusions** (whitelist)
+- Patterns with `!` prefix are **exclusions** (blacklist)
+- Similar to `.gitignore` but inverted (inclusions are default)
 
-### Managed Files
+### Location
 
-- `meta.json` is excluded when syncing from destinations to source
-- `meta.json` is included when syncing everything from source to destinations
-- `meta.json` is excluded from update comparison checks
-- `.syncignore` is never synced to destinations (always excluded)
-- `.syncinclude` is never synced to destinations (always excluded)
+- **Source**: `~/PycharmProjects/cursor-rules-and-prompts/.cursor/.include`
+- **Destination**: `{destination}/.cursor/.include`
+- Patterns from both files are combined
 
-### .syncignore Support
+### Pattern Syntax
 
-The script supports `.syncignore` files that work like `.gitignore` for the `.cursor` directory. This allows you to exclude specific files or patterns from syncing.
-
-#### How It Works
-
-1. **Source `.syncignore`**: Patterns in `~/PycharmProjects/cursor-rules-and-prompts/.cursor/.syncignore` are applied when syncing to destinations
-2. **Destination `.syncignore`**: Patterns in destination `.cursor/.syncignore` files are also respected when syncing to that destination
-3. **Combined patterns**: When syncing to destinations, patterns from both source and destination `.syncignore` files are combined
-4. **Never synced**: The `.syncignore` file itself is never copied to destinations
-5. **Bidirectional**: When syncing from destination to source, only the destination's `.syncignore` patterns are used
-
-#### Usage
-
-Create a `.syncignore` file in your `.cursor` directory with patterns to exclude:
-
-```bash
-# Example .syncignore
-*.log
-temp/
-*.cache
-backup/
-# Comments are supported
-```
-
-#### Pattern Syntax
-
-The `.syncignore` file uses the same pattern syntax as `.gitignore`:
-- `*.ext` - Exclude all files with extension `.ext`
-- `directory/` - Exclude entire directory
-- `file.txt` - Exclude specific file
+- `pattern` - Include this pattern
+- `!pattern` - Exclude this pattern
 - `# comment` - Comments (lines starting with `#` are ignored)
 - Empty lines are ignored
+- Directory patterns ending with `/` are recursively expanded
 
-#### Examples
+### Examples
 
-**Exclude entire directories:**
-```
-# Exclude entire directory and all its contents
-backup/
-temp/
-old-rules/
-cache/
-```
-
-**Exclude specific files:**
-```
-# Exclude individual files
-local-config.json
-personal-notes.md
-secrets.env
-```
-
-**Exclude files by pattern:**
-```
-# Exclude all temporary files
-*.tmp
-*.log
-*.cache
-
-# Exclude all files in a directory matching a pattern
-backup/*.bak
-temp/*.old
-```
-
-**Combined example - exclude directories and files:**
-```
-# Exclude directories
-backup/
-temp/
-old-rules/
-
-# Exclude specific files
-local-config.json
-secrets.env
-
-# Exclude file patterns
-*.tmp
-*.log
-```
-
-### .syncinclude Support
-
-The script supports `.syncinclude` files that act as a **whitelist** for syncing. If a `.syncinclude` file exists in source or destination, **only** the patterns defined in it will be synced, and everything else will be skipped.
-
-#### How It Works
-
-1. **Whitelist mode**: If `.syncinclude` exists in source or destination, only patterns listed in it are synced
-2. **Takes precedence**: `.syncinclude` takes precedence over `.syncignore` (whitelist mode overrides blacklist mode)
-3. **Combined patterns**: When syncing to destinations, patterns from both source and destination `.syncinclude` files are combined
-4. **Never synced**: The `.syncinclude` file itself is never copied to destinations
-5. **Bidirectional**: When syncing from destination to source, only the destination's `.syncinclude` patterns are used
-6. **Parent directories**: Parent directories are automatically included to allow rsync traversal
-
-#### Usage
-
-Create a `.syncinclude` file in your `.cursor` directory with patterns to include:
+**Include only rules and prompts:**
 
 ```bash
-# Example .syncinclude
+# Include rules directory (recursively)
 rules/
-rules/code-style/
-meta.json
-```
 
-#### Pattern Syntax
-
-The `.syncinclude` file uses the same pattern syntax as `.gitignore`:
-- `*.ext` - Include all files with extension `.ext`
-- `directory/` or `directory/*` - Include entire directory and all its contents (both formats work)
-- `file.txt` - Include specific file
-- `# comment` - Comments (lines starting with `#` are ignored)
-- Empty lines are ignored
-
-**Important**: When using `.syncinclude`, only the patterns listed will be synced. If `meta.json` is not in the include list, it won't be synced (even in "everything" mode).
-
-#### Examples
-
-**Include entire directories:**
-```gitignore
-# Include entire directory and all its contents
-# Both dir/ and dir/* formats work
-rules/
-rules/code-style/
-rules/organization/
+# Include prompts directory (recursively)
 prompts/
 ```
 
-**Include specific files:**
-```
-# Include individual files
-meta.json
-rules/code-style/imports.mdc
-rules/organization/file-organization.mdc
-prompts/common-prompts.md
-```
+**Include specific subdirectories:**
 
-**Include files by pattern:**
-```
-# Include all files with specific extension
-*.mdc
-*.json
-
-# Include all files in a directory matching a pattern
-rules/**/*.mdc
-prompts/*.md
-```
-
-**Combined example - include directories and files:**
-```
-# Include entire directories (dir/ or dir/* both work)
-rules/
-rules/code-style/
-prompts/
-
-# Include specific files
-meta.json
-config.json
-
-# Include file patterns
-*.mdc
-*.json
-```
-
-**Real-world example - sync only essential rules:**
-```
-# Include only essential rule directories
-rules/code-style/
-rules/organization/
+```bash
+# Include only specific rule categories
+rules/academic/
 rules/documentation/
 
-# Include meta.json for version tracking
-meta.json
+# Include prompts
+prompts/
+
+# Exclude a specific subdirectory
+!rules/academic/old/
 ```
 
-#### Quick Reference: Common Use Cases
+**Include with exclusions:**
 
-| Use Case                                     | `.syncignore` Example                 | `.syncinclude` Example              |
-|----------------------------------------------|---------------------------------------|-------------------------------------|
-| **Exclude/Include entire directory**         | `backup/`                             | `rules/` or `rules/*`               |
-| **Exclude/Include specific file**            | `secrets.env`                         | `meta.json`                         |
-| **Exclude/Include all files with extension** | `*.tmp`                               | `*.mdc`                             |
-| **Exclude/Include files in subdirectory**    | `temp/*.old`                          | `rules/**/*.mdc`                    |
-| **Exclude/Include multiple directories**     | `backup/`<br>`temp/`<br>`cache/`      | `rules/`<br>`prompts/`<br>`config/` |
-| **Exclude/Include mixed (dirs + files)**     | `backup/`<br>`secrets.env`<br>`*.tmp` | `rules/`<br>`meta.json`<br>`*.mdc`  |
+```bash
+# Include rules but exclude old rules
+rules/
+!rules/old/
+!rules/deprecated/
 
-#### Priority
+# Include prompts but exclude specific files
+prompts/
+!prompts/temp.md
+```
 
-When both `.syncinclude` and `.syncignore` exist:
-- **`.syncinclude` takes precedence** - Only patterns in `.syncinclude` are synced
-- `.syncignore` is ignored when `.syncinclude` is present
+**Exclude patterns only (blacklist mode):**
+
+```bash
+# Exclude temporary files
+!*.tmp
+!*.log
+!temp/
+!backup/
+```
+
+### Recursive Directory Inclusion
+
+When you specify a directory pattern (ending with `/`), all subdirectories are automatically included:
+
+```bash
+# This includes:
+# - prompts/
+# - prompts/html-to-markdown/
+# - prompts/html-to-markdown/subdir/
+# - All files at any depth
+prompts/
+```
+
+The script generates patterns up to 20 levels deep automatically.
+
+### Pattern Conflicts
+
+If the same pattern appears in both include and exclude:
+- **Include takes precedence** (warning is logged)
+- Example: `rules/` and `!rules/` → `rules/` is included
+
+### Important Notes
+
+- The `.include` file itself is **never synced** (always excluded)
+- If no `.include` file exists or it's empty, the directory is **skipped** with a warning
+- Both source and destination `.include` files are read and combined
+- Patterns are relative to `.cursor/` directory
+
+## File Processing Flow
+
+1. **Read `.include` files** (source + destination)
+2. **Parse patterns** (inclusions and exclusions)
+3. **Expand directory patterns** (recursive inclusion)
+4. **Run rsync** with generated patterns
+5. **Build ID mappings** (source and destination)
+6. **Process ID matching** (handle renames, updates)
+7. **Cleanup orphaned files** (remove files not in source)
 
 ## Error Handling
 
 - Exits if source directory doesn't exist
-- Creates `meta.json` if missing
-- Handles missing JSON parsing tools gracefully
+- Skips destinations without `.cursor/` directory (with info message)
+- Skips destinations without `.include` file (with warning)
 - Continues processing even if individual destinations fail
+- Logs warnings for pattern conflicts
+- Handles missing ID gracefully (falls back to filename)
 
 ## Output
 
 The script provides colored output:
-- **Blue [INFO]**: General information
+- **Blue [INFO]**: General information and progress
 - **Green [SUCCESS]**: Successful operations
-- **Yellow [WARNING]**: Warnings (e.g., missing directories)
+- **Yellow [WARNING]**: Warnings (e.g., missing `.include` files, pattern conflicts)
 - **Red [ERROR]**: Errors that stop execution
+
+Progress messages show: `Synced to X/Y destinations` after each successful sync.
 
 ## Requirements
 
 - `rsync` - For file synchronization
 - `bash` - Shell interpreter
-- One of: `jq`, `python3`, or basic shell tools for JSON parsing
+- `awk`, `grep`, `sed` - Text processing (standard Unix tools)
 
 ## Example Workflow
 
-1. Run script from any directory: `sync-cursor` (or use full path)
-2. Script detects current directory and includes it as destination if outside `~/PycharmProjects/`
-3. Choose sync mode: `Y` (rules only) or `n` (everything)
-4. Script checks all destinations (including current directory if applicable) for updates
-5. If updates found, prompts: "Do you want to update source from [dir]? (y/n)"
-6. If source updated, version increments automatically
-7. Source syncs to all destinations (including current directory if applicable)
-8. Shows final version and completion message
+1. Create `.include` file in source: `~/PycharmProjects/cursor-rules-and-prompts/.cursor/.include`
+   ```bash
+   rules/
+   prompts/
+   ```
 
-## Running from Different Locations
+2. Create `.include` file in destination: `~/PycharmProjects/my-project/.cursor/.include`
+   ```bash
+   rules/academic/
+   prompts/
+   ```
 
-### From Source Directory
-```bash
-cd ~/PycharmProjects/cursor-rules-and-prompts
-sync-cursor
+3. Run sync: `sync-cursor`
+
+4. Script will:
+   - Read both `.include` files
+   - Combine patterns (rules/, prompts/, rules/academic/)
+   - Sync matching files from source to destination
+   - Process ID-based matching (handle renames)
+   - Clean up orphaned files
+
+## Deprecated Scripts
+
+### fetch-cursor-rules.sh
+
+The `fetch-cursor-rules.sh` script is **deprecated** and no longer used. All functionality has been migrated to `sync-cursor.sh`. The new script provides:
+
+- Better ID-based matching
+- Simpler configuration (single `.include` file)
+- Path-based syncing (no interactive prompts)
+- Recursive directory inclusion
+- Improved error handling
+
+If you have any references to `fetch-cursor-rules.sh`, please update them to use `sync-cursor.sh` instead.
+
+## Migration from Old Scripts
+
+If you were using the old scripts, here's what changed:
+
+### From fetch-cursor-rules.sh
+
+- **No longer needed**: The script is deprecated
+- **Use**: `sync-cursor.sh` instead
+- **Configuration**: Create `.include` file instead of using GitHub repository
+
+### From Old sync-cursor.sh (with .syncignore/.syncinclude)
+
+1. **Combine files**: Merge `.syncignore` and `.syncinclude` into single `.include` file
+2. **Add exclusions**: Prefix exclusion patterns with `!`
+3. **Remove interactive prompts**: No more "sync only rules?" prompt - it's path-based now
+4. **Remove meta.json**: Version tracking is no longer used
+
+### Example Migration
+
+**Old `.syncinclude`:**
 ```
-Current directory is not treated as a destination. All other directories in `~/PycharmProjects/` are synced.
-
-### From Another Project in PycharmProjects
-```bash
-cd ~/PycharmProjects/my-other-project
-sync-cursor
+rules/
+prompts/
 ```
-Current directory is already included in the standard destinations list. No special handling needed.
 
-### From Outside PycharmProjects
-```bash
-cd ~/Documents/my-project
-sync-cursor
+**Old `.syncignore`:**
 ```
-Current directory (`~/Documents/my-project`) is automatically added as a destination. It will:
-- Be checked for new or updated files
-- Prompt to sync updates to source if found
-- Receive synced content from source
+*.tmp
+backup/
+```
 
+**New `.include`:**
+```
+rules/
+prompts/
+!*.tmp
+!backup/
+```
+
+## Troubleshooting
+
+### Directory Not Syncing
+
+**Problem**: Directory has `.cursor/` but nothing is syncing.
+
+**Solution**: 
+- Check if `.include` file exists in `.cursor/` directory
+- Check if `.include` file has non-empty, non-comment lines
+- Script will warn if `.include` is missing or empty
+
+### Subdirectories Not Included
+
+**Problem**: Added `prompts/` but subdirectories like `prompts/html-to-markdown/` are not syncing.
+
+**Solution**: 
+- Ensure pattern ends with `/` (e.g., `prompts/` not `prompts`)
+- Script automatically expands directory patterns recursively
+- Check that subdirectories aren't excluded by `!` patterns
+
+### Files Not Renaming
+
+**Problem**: File renamed in source but still has old name in destination.
+
+**Solution**:
+- Ensure both source and destination files have `id` in frontmatter
+- Check that IDs match between source and destination
+- Script uses ID-based matching for renames
+
+### Orphaned Files Not Removed
+
+**Problem**: Files deleted in source still exist in destination.
+
+**Solution**:
+- Ensure files have `id` in frontmatter
+- Script only removes files with IDs that no longer exist in source
+- Files without IDs won't be automatically cleaned up
