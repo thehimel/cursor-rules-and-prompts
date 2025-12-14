@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to sync .cursor directory from source to all destination directories
-# One-way sync: Source -> All Destinations (respects .syncignore and .syncinclude)
+# One-way sync: Source -> All Destinations (respects .include file, ! prefix for exclusion)
 # ID-based matching: Matches files by ID first, then filename (handles renames and ID updates)
 # Source: ~/PycharmProjects/cursor-rules-and-prompts/.cursor
 # Destinations: All other directories in ~/PycharmProjects/
@@ -91,9 +91,9 @@ build_id_mapping() {
         local relative_file="${file_path#$dir_path/}"
         local relative_path="${relative_base:+$relative_base/}$relative_file"
         
-        # Skip .syncignore and .syncinclude files
+        # Skip .include file
         local filename=$(basename "$relative_file")
-        if [ "$filename" = ".syncignore" ] || [ "$filename" = ".syncinclude" ]; then
+        if [ "$filename" = ".include" ]; then
             continue
         fi
         
@@ -172,10 +172,10 @@ cleanup_orphaned_files() {
 
 # Function to process ID-based matching and renames after rsync
 # Handles file renames based on ID matching
+# Processes whatever directories exist after rsync (path-based syncing)
 process_id_based_matching() {
     local dest_cursor="$1"
     local source_cursor="$2"
-    local sync_type="$3"  # "rules" or "all"
     
     local temp_dir=$(mktemp -d)
     local source_rules_id_map="$temp_dir/source_rules_id_map.txt"
@@ -201,18 +201,14 @@ process_id_based_matching() {
         build_id_mapping "$dest_cursor/prompts" "prompts" > "$dest_prompts_id_map"
     fi
     
-    # Process rules if syncing rules or all
-    if [ "$sync_type" = "rules" ] || [ "$sync_type" = "all" ]; then
-        if [ -d "$source_cursor/rules" ] && [ -f "$source_rules_id_map" ] && [ -f "$dest_rules_id_map" ]; then
-            process_directory_id_matching "$source_cursor/rules" "$dest_cursor/rules" "rules" "$source_rules_id_map" "$dest_rules_id_map"
-        fi
+    # Process rules if both source and dest exist
+    if [ -d "$source_cursor/rules" ] && [ -d "$dest_cursor/rules" ] && [ -f "$source_rules_id_map" ] && [ -f "$dest_rules_id_map" ]; then
+        process_directory_id_matching "$source_cursor/rules" "$dest_cursor/rules" "$source_rules_id_map" "$dest_rules_id_map"
     fi
     
-    # Process prompts if syncing all
-    if [ "$sync_type" = "all" ]; then
-        if [ -d "$source_cursor/prompts" ] && [ -f "$source_prompts_id_map" ] && [ -f "$dest_prompts_id_map" ]; then
-            process_directory_id_matching "$source_cursor/prompts" "$dest_cursor/prompts" "prompts" "$source_prompts_id_map" "$dest_prompts_id_map"
-        fi
+    # Process prompts if both source and dest exist
+    if [ -d "$source_cursor/prompts" ] && [ -d "$dest_cursor/prompts" ] && [ -f "$source_prompts_id_map" ] && [ -f "$dest_prompts_id_map" ]; then
+        process_directory_id_matching "$source_cursor/prompts" "$dest_cursor/prompts" "$source_prompts_id_map" "$dest_prompts_id_map"
     fi
     
     # Rebuild target ID mappings after processing (in case files were renamed)
@@ -227,7 +223,7 @@ process_id_based_matching() {
     if [ -f "$dest_rules_id_map" ] && [ -f "$source_rules_id_map" ]; then
         cleanup_orphaned_files "$dest_cursor" "$source_rules_id_map" "$dest_rules_id_map"
     fi
-    if [ "$sync_type" = "all" ] && [ -f "$dest_prompts_id_map" ] && [ -f "$source_prompts_id_map" ]; then
+    if [ -f "$dest_prompts_id_map" ] && [ -f "$source_prompts_id_map" ]; then
         cleanup_orphaned_files "$dest_cursor" "$source_prompts_id_map" "$dest_prompts_id_map"
     fi
     
@@ -237,7 +233,7 @@ process_id_based_matching() {
 
 # Function to process ID-based matching for a directory
 process_directory_id_matching() {
-    local source_dir="$1" dest_dir="$2" source_id_map="$4" dest_id_map="$5"
+    local source_dir="$1" dest_dir="$2" source_id_map="$3" dest_id_map="$4"
     [ ! -d "$source_dir" ] || [ ! -d "$dest_dir" ] && return
     
     shopt -s nullglob dotglob
@@ -271,122 +267,181 @@ process_directory_id_matching() {
     shopt -u nullglob dotglob
 }
 
-# Helper function to read patterns from a file (skip comments and empty lines)
-read_patterns() {
-    local file="$1"
-    if [ -f "$file" ]; then
+# Function to check if .include file exists and has content
+has_include_patterns() {
+    local target_dir="$1"
+    local source_include="$SOURCE_CURSOR/.include"
+    local target_include="$target_dir/.cursor/.include"
+    
+    if [ -f "$source_include" ] && [ -s "$source_include" ]; then
+        if grep -v '^[[:space:]]*#' "$source_include" | grep -v '^[[:space:]]*$' | grep -q .; then
+            return 0
+        fi
+    fi
+    
+    if [ -f "$target_include" ] && [ -s "$target_include" ]; then
+        if grep -v '^[[:space:]]*#' "$target_include" | grep -v '^[[:space:]]*$' | grep -q .; then
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
+# Function to build rsync include and exclude files from .include file
+# Patterns without ! are includes, patterns with ! prefix are excludes
+build_include_exclude_files() {
+    local target_dir="$1"
+    local source_include="$SOURCE_CURSOR/.include"
+    local target_include="$target_dir/.cursor/.include"
+    local include_file=$(mktemp)
+    local exclude_file=$(mktemp)
+    
+    # Always exclude .include file itself
+    echo ".include" >> "$exclude_file"
+    
+    # Process source .include file
+    if [ -f "$source_include" ]; then
         while IFS= read -r line || [ -n "$line" ]; do
-            [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]] && echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$'
-        done < "$file"
-    fi
-}
-
-# Function to build rsync include file from .syncinclude files
-build_include_file() {
-    local target_dir="$1"
-    local source_include="$SOURCE_CURSOR/.syncinclude"
-    local target_include="$target_dir/.cursor/.syncinclude"
-    
-    [ ! -f "$source_include" ] && [ ! -f "$target_include" ] && return
-    
-    local temp_file=$(mktemp)
-    read_patterns "$source_include" >> "$temp_file"
-    read_patterns "$target_include" >> "$temp_file"
-    
-    if [ -s "$temp_file" ]; then
-        local temp_expanded=$(mktemp)
-        while IFS= read -r pattern; do
-            [ -z "$pattern" ] && continue
-            [[ "$pattern" == */ ]] && echo "${pattern%/}/*" >> "$temp_expanded"
-            echo "$pattern" >> "$temp_expanded"
-            local parent="${pattern%/}"
-            while [[ "$parent" == */* ]]; do
-                parent="${parent%/*}"
-                [ -n "$parent" ] && echo "${parent}/" >> "$temp_expanded"
-            done
-        done < "$temp_file"
-        sort -u "$temp_expanded" | grep -v '^$' > "$temp_file"
-        rm -f "$temp_expanded"
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+            line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            [ -z "$line" ] && continue
+            
+            if [[ "$line" =~ ^! ]]; then
+                # Exclusion pattern: remove ! prefix
+                pattern="${line#!}"
+                echo "$pattern" >> "$exclude_file"
+            else
+                # Inclusion pattern
+                echo "$line" >> "$include_file"
+            fi
+        done < "$source_include"
     fi
     
-    echo "$temp_file"
-}
-
-# Function to build rsync exclude file from .syncignore files
-build_exclude_file() {
-    local target_dir="$1"
-    local temp_file=$(mktemp)
+    # Process target .include file
+    if [ -f "$target_include" ]; then
+        while IFS= read -r line || [ -n "$line" ]; do
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+            line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            [ -z "$line" ] && continue
+            
+            if [[ "$line" =~ ^! ]]; then
+                # Exclusion pattern: remove ! prefix
+                pattern="${line#!}"
+                echo "$pattern" >> "$exclude_file"
+            else
+                # Inclusion pattern
+                echo "$line" >> "$include_file"
+            fi
+        done < "$target_include"
+    fi
     
-    echo ".syncignore" >> "$temp_file"
-    echo ".syncinclude" >> "$temp_file"
-    read_patterns "$SOURCE_CURSOR/.syncignore" >> "$temp_file"
-    read_patterns "$target_dir/.cursor/.syncignore" >> "$temp_file"
+    # Expand patterns: add parent directories and wildcards for rsync
+    # For directory patterns, recursively include all subdirectories at any depth
+    expand_patterns() {
+        local input_file="$1"
+        local output_file="$2"
+        if [ -s "$input_file" ]; then
+            local temp_expanded=$(mktemp)
+            while IFS= read -r pattern; do
+                [ -z "$pattern" ] && continue
+                
+                # If pattern ends with /, it's a directory - include recursively
+                if [[ "$pattern" == */ ]]; then
+                    local dir_pattern="${pattern%/}"
+                    # Include the directory itself
+                    echo "$dir_pattern/" >> "$temp_expanded"
+                    # Include all immediate contents (files and directories)
+                    echo "${dir_pattern}/*" >> "$temp_expanded"
+                    # For recursive inclusion, we need patterns that match subdirectories at each level
+                    # Key: include subdirectories with / so rsync traverses into them
+                    # Generate recursive patterns: dir/*/, dir/*/*/, dir/*/*/*/, etc.
+                    local recursive_pattern="${dir_pattern}"
+                    for i in {1..20}; do
+                        recursive_pattern="${recursive_pattern}/*"
+                        # Include files at this depth
+                        echo "${recursive_pattern}" >> "$temp_expanded"
+                        # Include subdirectories at this depth (critical for traversal)
+                        echo "${recursive_pattern}/" >> "$temp_expanded"
+                    done
+                else
+                    # Regular pattern (file or directory without trailing /)
+                    echo "$pattern" >> "$temp_expanded"
+                    # If it might be a directory (no extension and no slash), add recursive patterns
+                    if [[ "$pattern" != *.* ]] && [[ "$pattern" != */* ]]; then
+                        echo "${pattern}/" >> "$temp_expanded"
+                        echo "${pattern}/*" >> "$temp_expanded"
+                        local recursive_pattern="${pattern}"
+                        for i in {1..20}; do
+                            recursive_pattern="${recursive_pattern}/*"
+                            echo "${recursive_pattern}" >> "$temp_expanded"
+                            echo "${recursive_pattern}/" >> "$temp_expanded"
+                        done
+                    fi
+                fi
+                
+                # Add parent directories for rsync traversal
+                local parent="${pattern%/}"
+                while [[ "$parent" == */* ]]; do
+                    parent="${parent%/*}"
+                    [ -n "$parent" ] && echo "${parent}/" >> "$temp_expanded"
+                done
+            done < "$input_file"
+            sort -u "$temp_expanded" | grep -v '^$' > "$output_file"
+            rm -f "$temp_expanded"
+        fi
+    }
     
-    [ -s "$temp_file" ] && sort -u "$temp_file" | grep -v '^$' > "${temp_file}.sorted" && mv "${temp_file}.sorted" "$temp_file"
-    echo "$temp_file"
+    expand_patterns "$include_file" "$include_file"
+    expand_patterns "$exclude_file" "$exclude_file"
+    
+    # Check for conflicts (same pattern in both include and exclude)
+    if [ -s "$include_file" ] && [ -s "$exclude_file" ]; then
+        while IFS= read -r include_pattern; do
+            if grep -Fxq "$include_pattern" "$exclude_file" 2>/dev/null; then
+                warning "Pattern '$include_pattern' found in both include and exclude - include takes precedence"
+            fi
+        done < "$include_file"
+    fi
+    
+    echo "$include_file|$exclude_file"
 }
 
 # Function to sync from source to destination (one-way sync: source -> destination)
 sync_source_to_dest() {
     local dest_dir="$1"
-    local sync_rules_only="$2"
-    local exclude_file
+    local files_result
     local include_file
+    local exclude_file
     local rsync_exit=0
     
-    # Check for .syncinclude first (whitelist mode takes precedence)
-    include_file=$(build_include_file "$dest_dir" "$sync_rules_only")
-    exclude_file=$(build_exclude_file "$dest_dir")
+    # Build include and exclude files from .include
+    files_result=$(build_include_exclude_files "$dest_dir")
+    include_file=$(echo "$files_result" | cut -d'|' -f1)
+    exclude_file=$(echo "$files_result" | cut -d'|' -f2)
     
-    if [ "$sync_rules_only" = "y" ] || [ -z "$sync_rules_only" ]; then
-        # Sync only rules directory
-        info "Syncing rules only to $dest_dir..."
-        if [ -d "$SOURCE_CURSOR/rules" ]; then
-            mkdir -p "$dest_dir/.cursor/rules"
-            if [ -n "$include_file" ] && [ -s "$include_file" ]; then
-                # Whitelist mode: only include patterns from .syncinclude
-                rsync -av --delete --exclude=".syncinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
-                rsync_exit=${PIPESTATUS[0]}
-            elif [ -s "$exclude_file" ]; then
-                # Blacklist mode: exclude patterns from .syncignore
-                rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
-                rsync_exit=${PIPESTATUS[0]}
-            else
-                # Normal mode: sync everything
-                rsync -av --delete "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
-                rsync_exit=${PIPESTATUS[0]}
-            fi
-        else
-            warning "Rules directory not found in source, skipping..."
-            rsync_exit=1
-        fi
+    info "Syncing to $dest_dir..."
+    
+    if [ -n "$include_file" ] && [ -s "$include_file" ]; then
+        # Whitelist mode: only include patterns from .include
+        rsync -av --delete --exclude=".include" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+        rsync_exit=${PIPESTATUS[0]}
+    elif [ -s "$exclude_file" ]; then
+        # Blacklist mode: exclude patterns from .include (with ! prefix)
+        rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+        rsync_exit=${PIPESTATUS[0]}
     else
-        # Sync everything
-        info "Syncing everything to $dest_dir..."
-        if [ -n "$include_file" ] && [ -s "$include_file" ]; then
-            # Whitelist mode: only include patterns from .syncinclude
-            rsync -av --delete --exclude=".syncinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
-            rsync_exit=${PIPESTATUS[0]}
-        elif [ -s "$exclude_file" ]; then
-            # Blacklist mode: exclude patterns from .syncignore
-            rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
-            rsync_exit=${PIPESTATUS[0]}
-        else
-            # Normal mode: sync everything
-            rsync -av --delete "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
-            rsync_exit=${PIPESTATUS[0]}
-        fi
+        # Normal mode: sync everything (no .include file or empty)
+        rsync -av --delete --exclude=".include" "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+        rsync_exit=${PIPESTATUS[0]}
     fi
     
     # Clean up temp files
     rm -f "$exclude_file" "$include_file"
     
     # Process ID-based matching after rsync
-    if [ "$sync_rules_only" = "y" ] || [ -z "$sync_rules_only" ]; then
-        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "rules" || true
-    else
-        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "all" || true
-    fi
+    # Process whatever directories exist (path-based syncing via .include)
+    process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" || true
     
     return $rsync_exit
 }
@@ -397,10 +452,6 @@ main() {
     
     info "Starting .cursor directory sync..."
     [ ! -d "$SOURCE_CURSOR" ] && error "Source directory does not exist: $SOURCE_CURSOR" && exit 1
-    
-    echo -n "Do you want to sync only rules? (Y/n): "
-    read -r sync_rules_only
-    sync_rules_only="${sync_rules_only:-y}"
     
     # If a specific directory is provided, sync only to that directory
     if [ -n "$target_dir" ]; then
@@ -425,8 +476,16 @@ main() {
             exit 1
         fi
         
+        # Check if .include file exists and has content
+        if ! has_include_patterns "$target_dir"; then
+            warning "No .include file found or .include file is empty in $target_dir/.cursor - skipping sync"
+            warning "You have not included or excluded any rules and prompts paths"
+            success "Sync completed!"
+            return
+        fi
+        
         info "Syncing to specific directory: $target_dir"
-        if sync_source_to_dest "$target_dir" "$sync_rules_only"; then
+        if sync_source_to_dest "$target_dir"; then
             success "Sync completed!"
         else
             error "Sync failed for $target_dir"
@@ -438,16 +497,17 @@ main() {
     # Sync to all destinations
     info "Syncing source to all destinations..."
     
-    # Count total destinations first
+    # Count total destinations first (only those with .include files)
     local total_destinations=0
     while IFS= read -r dest_dir; do
         [ -z "$dest_dir" ] && continue
         [ ! -d "$dest_dir/.cursor" ] && continue
-        total_destinations=$((total_destinations + 1))
+        has_include_patterns "$dest_dir" && total_destinations=$((total_destinations + 1))
     done < <(get_destinations)
     
     if [ $total_destinations -eq 0 ]; then
-        warning "No destination directories found"
+        warning "No destination directories found with .include file or .include files are empty"
+        warning "You have not included or excluded any rules and prompts paths"
         success "Sync completed!"
         return
     fi
@@ -460,7 +520,13 @@ main() {
         [ -z "$dest_dir" ] && continue
         [ ! -d "$dest_dir/.cursor" ] && info "Skipping $dest_dir (no .cursor directory)" && continue
         
-        if sync_source_to_dest "$dest_dir" "$sync_rules_only"; then
+        # Check if .include file exists and has content
+        if ! has_include_patterns "$dest_dir"; then
+            info "Skipping $dest_dir (no .include file or .include file is empty)"
+            continue
+        fi
+        
+        if sync_source_to_dest "$dest_dir"; then
             dest_count=$((dest_count + 1))
             info "Synced to $dest_count/$total_destinations $dest_word"
             echo ""  # Add blank line after progress
