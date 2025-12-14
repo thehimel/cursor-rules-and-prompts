@@ -332,9 +332,10 @@ sync_source_to_dest() {
     local sync_rules_only="$2"
     local exclude_file
     local include_file
+    local rsync_exit=0
     
     # Check for .syncinclude first (whitelist mode takes precedence)
-    include_file=$(build_include_file "$dest_dir")
+    include_file=$(build_include_file "$dest_dir" "$sync_rules_only")
     exclude_file=$(build_exclude_file "$dest_dir")
     
     if [ "$sync_rules_only" = "y" ] || [ -z "$sync_rules_only" ]; then
@@ -344,29 +345,36 @@ sync_source_to_dest() {
             mkdir -p "$dest_dir/.cursor/rules"
             if [ -n "$include_file" ] && [ -s "$include_file" ]; then
                 # Whitelist mode: only include patterns from .syncinclude
-                rsync -av --delete --exclude=".syncinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/"
+                rsync -av --delete --exclude=".syncinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+                rsync_exit=${PIPESTATUS[0]}
             elif [ -s "$exclude_file" ]; then
                 # Blacklist mode: exclude patterns from .syncignore
-                rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/"
+                rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+                rsync_exit=${PIPESTATUS[0]}
             else
                 # Normal mode: sync everything
-                rsync -av --delete "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/"
+                rsync -av --delete "$SOURCE_CURSOR/rules/" "$dest_dir/.cursor/rules/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+                rsync_exit=${PIPESTATUS[0]}
             fi
         else
             warning "Rules directory not found in source, skipping..."
+            rsync_exit=1
         fi
     else
         # Sync everything
         info "Syncing everything to $dest_dir..."
         if [ -n "$include_file" ] && [ -s "$include_file" ]; then
             # Whitelist mode: only include patterns from .syncinclude
-            rsync -av --delete --exclude=".syncinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/" "$dest_dir/.cursor/"
+            rsync -av --delete --exclude=".syncinclude" --include-from="$include_file" --exclude='*' "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+            rsync_exit=${PIPESTATUS[0]}
         elif [ -s "$exclude_file" ]; then
             # Blacklist mode: exclude patterns from .syncignore
-            rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/" "$dest_dir/.cursor/"
+            rsync -av --delete --exclude-from="$exclude_file" "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+            rsync_exit=${PIPESTATUS[0]}
         else
             # Normal mode: sync everything
-            rsync -av --delete "$SOURCE_CURSOR/" "$dest_dir/.cursor/"
+            rsync -av --delete "$SOURCE_CURSOR/" "$dest_dir/.cursor/" 2>&1 | awk '/^Transfer starting:/{print; getline; if(/^$/) getline; print; next}1'
+            rsync_exit=${PIPESTATUS[0]}
         fi
     fi
     
@@ -375,14 +383,18 @@ sync_source_to_dest() {
     
     # Process ID-based matching after rsync
     if [ "$sync_rules_only" = "y" ] || [ -z "$sync_rules_only" ]; then
-        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "rules"
+        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "rules" || true
     else
-        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "all"
+        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "all" || true
     fi
+    
+    return $rsync_exit
 }
 
 # Main execution
 main() {
+    local target_dir="$1"  # Optional: specific directory to sync to
+    
     info "Starting .cursor directory sync..."
     [ ! -d "$SOURCE_CURSOR" ] && error "Source directory does not exist: $SOURCE_CURSOR" && exit 1
     
@@ -390,19 +402,74 @@ main() {
     read -r sync_rules_only
     sync_rules_only="${sync_rules_only:-y}"
     
-    info "Syncing source to all destinations..."
-    local dest_count=0
+    # If a specific directory is provided, sync only to that directory
+    if [ -n "$target_dir" ]; then
+        # Normalize the path (resolve relative paths, symlinks, etc.)
+        if [ ! -d "$target_dir" ]; then
+            error "Directory does not exist: $target_dir"
+            exit 1
+        fi
+        
+        # Get absolute path
+        target_dir=$(cd "$target_dir" && pwd)
+        
+        # Check if it's the source directory
+        if [ "$target_dir" = "$SOURCE_DIR" ]; then
+            error "Cannot sync to source directory: $target_dir"
+            exit 1
+        fi
+        
+        # Check if .cursor directory exists
+        if [ ! -d "$target_dir/.cursor" ]; then
+            error "Directory does not have .cursor folder: $target_dir"
+            exit 1
+        fi
+        
+        info "Syncing to specific directory: $target_dir"
+        if sync_source_to_dest "$target_dir" "$sync_rules_only"; then
+            success "Sync completed!"
+        else
+            error "Sync failed for $target_dir"
+            exit 1
+        fi
+        return
+    fi
     
+    # Sync to all destinations
+    info "Syncing source to all destinations..."
+    
+    # Count total destinations first
+    local total_destinations=0
     while IFS= read -r dest_dir; do
-        [ ! -d "$dest_dir/.cursor" ] && info "Skipping $dest_dir (no .cursor directory)" && continue
-        sync_source_to_dest "$dest_dir" "$sync_rules_only"
-        dest_count=$((dest_count + 1))
+        [ -z "$dest_dir" ] && continue
+        [ ! -d "$dest_dir/.cursor" ] && continue
+        total_destinations=$((total_destinations + 1))
     done < <(get_destinations)
     
-    [ $dest_count -eq 0 ] && warning "No destination directories found" || success "Synced to $dest_count destination(s)"
+    if [ $total_destinations -eq 0 ]; then
+        warning "No destination directories found"
+        success "Sync completed!"
+        return
+    fi
+    
+    local dest_count=0
+    local dest_word="destination"
+    [ $total_destinations -ne 1 ] && dest_word="destinations"
+    
+    while IFS= read -r dest_dir; do
+        [ -z "$dest_dir" ] && continue
+        [ ! -d "$dest_dir/.cursor" ] && info "Skipping $dest_dir (no .cursor directory)" && continue
+        
+        if sync_source_to_dest "$dest_dir" "$sync_rules_only"; then
+            dest_count=$((dest_count + 1))
+            info "Synced to $dest_count/$total_destinations $dest_word"
+            echo ""  # Add blank line after progress
+        fi
+    done < <(get_destinations)
+    
     success "Sync completed!"
 }
 
 # Run main function
-main
+main "$@"
 
