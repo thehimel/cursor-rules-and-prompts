@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Script to sync .cursor directory from source to all destination directories
+# One-way sync: Source -> All Destinations (respects .syncignore and .syncinclude)
+# ID-based matching: Matches files by ID first, then filename (handles renames and ID updates)
 # Source: ~/PycharmProjects/cursor-rules-and-prompts/.cursor
 # Destinations: All other directories in ~/PycharmProjects/
 
@@ -17,7 +19,6 @@ NC='\033[0m' # No Color
 PYCHARM_DIR="$HOME/PycharmProjects"
 SOURCE_DIR="$PYCHARM_DIR/cursor-rules-and-prompts"
 SOURCE_CURSOR="$SOURCE_DIR/.cursor"
-META_FILE="$SOURCE_CURSOR/meta.json"
 
 # Function to print colored messages
 info() {
@@ -36,383 +37,296 @@ error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Function to read version from meta.json
-read_version() {
-    if [ -f "$META_FILE" ]; then
-        if command -v jq &> /dev/null; then
-            jq -r '.version // "1.0.0"' "$META_FILE"
-        elif command -v python3 &> /dev/null; then
-            python3 -c "import json, sys; data = json.load(open('$META_FILE')); print(data.get('version', '1.0.0'))"
-        else
-            grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$META_FILE" | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1 || echo "1.0.0"
-        fi
-    else
-        echo "1.0.0"
-    fi
-}
-
-# Function to get current date in YYYY-MM-DD format
-get_current_date() {
-    date +%Y-%m-%d
-}
-
-# Function to increment version by 0.0.1 and update meta.json
-increment_version() {
-    local current_version=$(read_version)
-    local major=$(echo "$current_version" | cut -d. -f1)
-    local minor=$(echo "$current_version" | cut -d. -f2)
-    local patch=$(echo "$current_version" | cut -d. -f3)
-    
-    # Increment patch version by 1 (0.0.1 means incrementing patch by 1)
-    patch=$((patch + 1))
-    local new_version="$major.$minor.$patch"
-    local current_date=$(get_current_date)
-    
-    # Update meta.json
-    if command -v jq &> /dev/null; then
-        jq --arg version "$new_version" --arg date "$current_date" '.version = $version | .last_updated = $date' "$META_FILE" > "$META_FILE.tmp" && mv "$META_FILE.tmp" "$META_FILE"
-    elif command -v python3 &> /dev/null; then
-        python3 << EOF
-import json
-import sys
-with open('$META_FILE', 'r') as f:
-    data = json.load(f)
-data['version'] = '$new_version'
-data['last_updated'] = '$current_date'
-with open('$META_FILE', 'w') as f:
-    json.dump(data, f, indent=4)
-EOF
-    else
-        # Fallback: basic sed replacement (less reliable but works for simple JSON)
-        sed -i.bak "s/\"version\":[[:space:]]*\"[^\"]*\"/\"version\": \"$new_version\"/" "$META_FILE"
-        sed -i.bak "s/\"last_updated\":[[:space:]]*\"[^\"]*\"/\"last_updated\": \"$current_date\"/" "$META_FILE"
-        rm -f "$META_FILE.bak"
-    fi
-    
-    echo "$new_version"
-}
-
-# Function to normalize path (resolve symlinks and get absolute path)
-normalize_path() {
-    local path="$1"
-    local original_pwd
-    
-    # Save current directory
-    original_pwd=$(pwd)
-    
-    # Get absolute path
-    if [ -d "$path" ]; then
-        cd "$path" && pwd
-        cd "$original_pwd"
-    else
-        # If path doesn't exist, try to resolve parent and append basename
-        local parent=$(dirname "$path")
-        local basename=$(basename "$path")
-        if [ -d "$parent" ]; then
-            cd "$parent" && echo "$(pwd)/$basename"
-            cd "$original_pwd"
-        else
-            echo "$path"
-        fi
-    fi
-}
-
-# Function to check if path is under a parent directory
-is_under_path() {
-    local child="$1"
-    local parent="$2"
-    # Remove trailing slashes for comparison
-    parent="${parent%/}"
-    child="${child%/}"
-    # Check if child starts with parent followed by /
-    [[ "$child" == "$parent" ]] || [[ "$child" == "$parent"/* ]]
-}
-
 # Function to get all destination directories
 get_destinations() {
-    local current_dir
-    local normalized_current
-    local normalized_source
-    local normalized_pycharm
-    
-    # Get current directory and normalize for comparison
-    current_dir=$(pwd)
-    normalized_current=$(normalize_path "$current_dir")
-    normalized_source=$(normalize_path "$SOURCE_DIR")
-    normalized_pycharm=$(normalize_path "$PYCHARM_DIR")
-    
-    # Get all directories from ~/PycharmProjects/ (excluding source)
-    find "$PYCHARM_DIR" -maxdepth 1 -type d ! -path "$PYCHARM_DIR" ! -path "$SOURCE_DIR" | sort
-    
-    # If current directory is outside ~/PycharmProjects/ and not the source, add it
-    if [[ "$normalized_current" != "$normalized_source" ]] && ! is_under_path "$normalized_current" "$normalized_pycharm"; then
-        echo "$normalized_current"
-    fi
+    [ -d "$PYCHARM_DIR" ] && find "$PYCHARM_DIR" -maxdepth 1 -type d ! -path "$PYCHARM_DIR" ! -path "$SOURCE_DIR" | sort
 }
 
-# Function to check if destination has newer files than source
-check_for_updates() {
-    local dest_cursor="$1/.cursor"
-    local has_updates=false
-    local new_files=()
-    local updated_files=()
+# Function to extract ID from frontmatter in a file
+# Returns the ID if found, empty string otherwise
+extract_id_from_file() {
+    local file_path="$1"
     
-    if [ ! -d "$dest_cursor" ]; then
+    if [ ! -f "$file_path" ]; then
         return 1
     fi
     
-    # Check for new files in destination (exclude meta.json and .syncignore from comparison)
-    while IFS= read -r file; do
-        local rel_path="${file#$dest_cursor/}"
-        local source_file="$SOURCE_CURSOR/$rel_path"
-        
-        # Skip meta.json, .syncignore, and .syncinclude in comparison (they're managed separately)
-        if [ "$rel_path" = "meta.json" ] || [ "$rel_path" = ".syncignore" ] || [ "$rel_path" = ".syncinclude" ]; then
-            continue
-        fi
-        
-        if [ ! -f "$source_file" ]; then
-            new_files+=("$rel_path")
-            has_updates=true
-        elif [ "$file" -nt "$source_file" ]; then
-            updated_files+=("$rel_path")
-            has_updates=true
-        fi
-    done < <(find "$dest_cursor" -type f ! -name "meta.json" ! -name ".syncignore" ! -name ".syncinclude")
+    # Check if file starts with frontmatter delimiter
+    local first_line=$(head -n 1 "$file_path" 2>/dev/null)
+    if [ "$first_line" != "---" ]; then
+        return 1
+    fi
     
-    if [ "$has_updates" = true ]; then
-        echo "NEW:${new_files[*]}|UPDATED:${updated_files[*]}"
+    # Extract ID from frontmatter (look for "id: value" pattern)
+    local id=$(awk '
+        /^---$/ { in_frontmatter = !in_frontmatter; next }
+        in_frontmatter && /^id:[[:space:]]*/ {
+            sub(/^id:[[:space:]]*/, "")
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+            print
+            exit
+        }
+    ' "$file_path" 2>/dev/null)
+    
+    if [ -n "$id" ]; then
+        echo "$id"
         return 0
     fi
     
     return 1
 }
 
-# Function to build rsync include file from .syncinclude files
-# $1: destination directory (for source->dest sync) or source directory (for dest->source sync)
-# $2: direction - "to_dest" (default) or "from_dest"
-# Returns: path to temp include file, or empty if no include file exists
-build_include_file() {
-    local target_dir="$1"
-    local direction="${2:-to_dest}"
-    local source_include="$SOURCE_CURSOR/.syncinclude"
-    local target_include="$target_dir/.cursor/.syncinclude"
-    local temp_include_file
+# Function to build ID-to-filename mapping for a directory
+# Outputs: id|relative_path pairs, one per line
+build_id_mapping() {
+    local dir_path="$1"
+    local relative_base="$2"
     
-    # Check if any include file exists
-    local has_include=false
-    if [ "$direction" = "to_dest" ]; then
-        if [ -f "$source_include" ] || [ -f "$target_include" ]; then
-            has_include=true
-        fi
-    else
-        if [ -f "$target_include" ]; then
-            has_include=true
-        fi
-    fi
-    
-    if [ "$has_include" != "true" ]; then
-        echo ""
+    if [ ! -d "$dir_path" ]; then
         return
     fi
     
-    # Create temporary file for include patterns
-    temp_include_file=$(mktemp)
-    
-    # Always include .syncinclude itself (but we'll exclude it later in rsync)
-    # Add patterns from source .syncinclude if it exists
-    if [ "$direction" = "to_dest" ] && [ -f "$source_include" ]; then
-        # Read source include file, skip empty lines and comments
-        while IFS= read -r line || [ -n "$line" ]; do
-            # Skip empty lines and comments
-            if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
-                # Remove leading/trailing whitespace
-                line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-                if [ -n "$line" ]; then
-                    echo "$line" >> "$temp_include_file"
-                fi
-            fi
-        done < "$source_include"
-    fi
-    
-    # Add patterns from destination .syncinclude if it exists
-    if [ -f "$target_include" ]; then
-        # Read destination include file, skip empty lines and comments
-        while IFS= read -r line || [ -n "$line" ]; do
-            # Skip empty lines and comments
-            if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
-                # Remove leading/trailing whitespace
-                line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-                if [ -n "$line" ]; then
-                    echo "$line" >> "$temp_include_file"
-                fi
-            fi
-        done < "$target_include"
-    fi
-    
-    # Process patterns: expand dir/ to dir/* and add parent directories
-    if [ -s "$temp_include_file" ]; then
-        local temp_with_parents=$(mktemp)
-        # Read from original file and build new file with expanded patterns
-        while IFS= read -r pattern || [ -n "$pattern" ]; do
-            if [ -n "$pattern" ]; then
-                # If pattern ends with /, expand it to include all contents
-                if [[ "$pattern" == */ ]]; then
-                    # Remove trailing slash and add /* pattern
-                    local dir_pattern="${pattern%/}"
-                    echo "${dir_pattern}/*" >> "$temp_with_parents"
-                    echo "${dir_pattern}/" >> "$temp_with_parents"
-                else
-                    echo "$pattern" >> "$temp_with_parents"
-                fi
-                
-                # Extract parent directories and add them (required for rsync traversal)
-                local parent="$pattern"
-                # Remove trailing slash if present for parent extraction
-                parent="${parent%/}"
-                while [[ "$parent" == */* ]]; do
-                    parent="${parent%/*}"
-                    if [ -n "$parent" ]; then
-                        # Add parent directory with trailing slash for rsync
-                        echo "${parent}/" >> "$temp_with_parents"
-                    fi
-                done
-            fi
-        done < "$temp_include_file"
-        # Remove duplicates, sort, and remove empty lines
-        sort -u "$temp_with_parents" | grep -v '^[[:space:]]*$' > "$temp_include_file"
-        rm -f "$temp_with_parents"
-    fi
-    
-    echo "$temp_include_file"
+    shopt -s nullglob dotglob
+    find "$dir_path" -type f \( -name "*.md" -o -name "*.mdc" \) | while read -r file_path; do
+        local relative_file="${file_path#$dir_path/}"
+        local relative_path="${relative_base:+$relative_base/}$relative_file"
+        
+        # Skip .syncignore and .syncinclude files
+        local filename=$(basename "$relative_file")
+        if [ "$filename" = ".syncignore" ] || [ "$filename" = ".syncinclude" ]; then
+            continue
+        fi
+        
+        local id=$(extract_id_from_file "$file_path")
+        if [ -n "$id" ]; then
+            echo "$id|$relative_path"
+        fi
+    done
+    shopt -u nullglob dotglob
 }
 
-# Function to build rsync exclude file from .syncignore files
-# $1: destination directory (for source->dest sync) or source directory (for dest->source sync)
-# $2: direction - "to_dest" (default) or "from_dest"
-build_exclude_file() {
-    local target_dir="$1"
-    local direction="${2:-to_dest}"
-    local source_ignore="$SOURCE_CURSOR/.syncignore"
-    local target_ignore="$target_dir/.cursor/.syncignore"
-    local temp_exclude_file
+# Function to find target file by ID
+# Returns the relative path (from base) to the target file if found, empty otherwise
+find_target_by_id() {
+    local search_id="$1"
+    local id_mapping_file="$2"
     
-    # Create temporary file for exclude patterns
-    temp_exclude_file=$(mktemp)
-    
-    # Always exclude .syncignore and .syncinclude themselves
-    echo ".syncignore" >> "$temp_exclude_file"
-    echo ".syncinclude" >> "$temp_exclude_file"
-    
-    if [ "$direction" = "to_dest" ]; then
-        # When syncing TO destination: use both source and destination ignore patterns
-        # Add patterns from source .syncignore if it exists
-        if [ -f "$source_ignore" ]; then
-            # Read source ignore file, skip empty lines and comments
-            while IFS= read -r line || [ -n "$line" ]; do
-                # Skip empty lines and comments
-                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
-                    # Remove leading/trailing whitespace
-                    line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-                    if [ -n "$line" ]; then
-                        echo "$line" >> "$temp_exclude_file"
-                    fi
-                fi
-            done < "$source_ignore"
-        fi
-        
-        # Add patterns from destination .syncignore if it exists
-        if [ -f "$target_ignore" ]; then
-            # Read destination ignore file, skip empty lines and comments
-            while IFS= read -r line || [ -n "$line" ]; do
-                # Skip empty lines and comments
-                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
-                    # Remove leading/trailing whitespace
-                    line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-                    if [ -n "$line" ]; then
-                        echo "$line" >> "$temp_exclude_file"
-                    fi
-                fi
-            done < "$target_ignore"
-        fi
-    else
-        # When syncing FROM destination: only use destination .syncignore patterns
-        if [ -f "$target_ignore" ]; then
-            # Read destination .syncignore file, skip empty lines and comments
-            while IFS= read -r line || [ -n "$line" ]; do
-                # Skip empty lines and comments
-                if [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]]; then
-                    # Remove leading/trailing whitespace
-                    line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-                    if [ -n "$line" ]; then
-                        echo "$line" >> "$temp_exclude_file"
-                    fi
-                fi
-            done < "$target_ignore"
-        fi
+    if [ ! -f "$id_mapping_file" ]; then
+        return 1
     fi
     
-    # Remove duplicates and empty lines
-    if [ -s "$temp_exclude_file" ]; then
-        sort -u "$temp_exclude_file" | grep -v '^[[:space:]]*$' > "${temp_exclude_file}.sorted"
-        mv "${temp_exclude_file}.sorted" "$temp_exclude_file"
-    fi
+    # Search for the ID in the mapping
+    local matched_path=$(grep "^${search_id}|" "$id_mapping_file" 2>/dev/null | head -n 1 | cut -d'|' -f2-)
     
-    echo "$temp_exclude_file"
-}
-
-# Function to sync from destination to source (with permission)
-sync_dest_to_source() {
-    local dest_dir="$1"
-    local dest_cursor="$dest_dir/.cursor"
-    local updates
-    local exit_code
-    local exclude_opts
-    
-    updates=$(check_for_updates "$dest_dir")
-    exit_code=$?
-    
-    if [ $exit_code -eq 0 ]; then
-        local new_files=$(echo "$updates" | cut -d'|' -f1 | sed 's/NEW://')
-        local updated_files=$(echo "$updates" | cut -d'|' -f2 | sed 's/UPDATED://')
-        
-        warning "Found updates in: $dest_dir"
-        if [ -n "$new_files" ]; then
-            info "New files: $new_files"
-        fi
-        if [ -n "$updated_files" ]; then
-            info "Updated files: $updated_files"
-        fi
-        
-        echo -n "Do you want to update source from $dest_dir? (y/n): "
-        read -r response
-        if [[ "$response" =~ ^[Yy]$ ]] || [ -z "$response" ]; then
-            info "Syncing from $dest_dir to source..."
-            # Check for .syncinclude first (whitelist mode)
-            include_file=$(build_include_file "$dest_dir" "from_dest")
-            exclude_file=$(build_exclude_file "$dest_dir" "from_dest")
-            
-            if [ -n "$include_file" ] && [ -s "$include_file" ]; then
-                # Whitelist mode: only include patterns from .syncinclude
-                rsync -av --update --exclude="meta.json" --exclude=".syncinclude" --include-from="$include_file" --exclude='*' "$dest_cursor/" "$SOURCE_CURSOR/"
-            else
-                # Normal mode: use exclude patterns
-                rsync -av --update --exclude="meta.json" --exclude-from="$exclude_file" "$dest_cursor/" "$SOURCE_CURSOR/"
-            fi
-            
-            rm -f "$include_file" "$exclude_file"
-            success "Source updated from $dest_dir"
-            return 0
-        else
-            info "Skipping update from $dest_dir"
-            return 1
-        fi
+    if [ -n "$matched_path" ]; then
+        echo "$matched_path"
+        return 0
     fi
     
     return 1
 }
 
-# Function to sync from source to destination
+# Function to cleanup orphaned files in target
+# Removes files that have IDs matching source IDs but are no longer in source,
+# or files that were matched by ID but source file was removed
+cleanup_orphaned_files() {
+    local dest_cursor="$1"
+    local source_id_map="$2"
+    local dest_id_map="$3"
+    
+    if [ ! -f "$dest_id_map" ]; then
+        return 0
+    fi
+    
+    info "Cleaning up orphaned files..."
+    local cleaned_count=0
+    
+    # Process each file in target ID mapping
+    while IFS='|' read -r target_id target_relative; do
+        if [ -z "$target_id" ] || [ -z "$target_relative" ]; then
+            continue
+        fi
+        
+        local target_file="$dest_cursor/$target_relative"
+        
+        # Check if this ID exists in source
+        if [ -f "$source_id_map" ]; then
+            local source_match=$(grep "^${target_id}|" "$source_id_map" 2>/dev/null | head -n 1)
+            if [ -z "$source_match" ]; then
+                # ID exists in target but not in source - this is an orphaned file
+                if [ -f "$target_file" ]; then
+                    warning "Removing orphaned file: $target_relative (ID: $target_id)"
+                    rm -f "$target_file"
+                    cleaned_count=$((cleaned_count + 1))
+                fi
+            fi
+        fi
+    done < "$dest_id_map"
+    
+    if [ $cleaned_count -eq 0 ]; then
+        success "No orphaned files found"
+    else
+        success "Removed $cleaned_count orphaned file(s)"
+    fi
+}
+
+# Function to process ID-based matching and renames after rsync
+# Handles file renames based on ID matching
+process_id_based_matching() {
+    local dest_cursor="$1"
+    local source_cursor="$2"
+    local sync_type="$3"  # "rules" or "all"
+    
+    local temp_dir=$(mktemp -d)
+    local source_rules_id_map="$temp_dir/source_rules_id_map.txt"
+    local source_prompts_id_map="$temp_dir/source_prompts_id_map.txt"
+    local dest_rules_id_map="$temp_dir/dest_rules_id_map.txt"
+    local dest_prompts_id_map="$temp_dir/dest_prompts_id_map.txt"
+    
+    info "Building ID mappings for ID-based matching..."
+    
+    # Build source ID mappings
+    if [ -d "$source_cursor/rules" ]; then
+        build_id_mapping "$source_cursor/rules" "rules" > "$source_rules_id_map"
+    fi
+    if [ -d "$source_cursor/prompts" ]; then
+        build_id_mapping "$source_cursor/prompts" "prompts" > "$source_prompts_id_map"
+    fi
+    
+    # Build target ID mappings
+    if [ -d "$dest_cursor/rules" ]; then
+        build_id_mapping "$dest_cursor/rules" "rules" > "$dest_rules_id_map"
+    fi
+    if [ -d "$dest_cursor/prompts" ]; then
+        build_id_mapping "$dest_cursor/prompts" "prompts" > "$dest_prompts_id_map"
+    fi
+    
+    # Process rules if syncing rules or all
+    if [ "$sync_type" = "rules" ] || [ "$sync_type" = "all" ]; then
+        if [ -d "$source_cursor/rules" ] && [ -f "$source_rules_id_map" ] && [ -f "$dest_rules_id_map" ]; then
+            process_directory_id_matching "$source_cursor/rules" "$dest_cursor/rules" "rules" "$source_rules_id_map" "$dest_rules_id_map"
+        fi
+    fi
+    
+    # Process prompts if syncing all
+    if [ "$sync_type" = "all" ]; then
+        if [ -d "$source_cursor/prompts" ] && [ -f "$source_prompts_id_map" ] && [ -f "$dest_prompts_id_map" ]; then
+            process_directory_id_matching "$source_cursor/prompts" "$dest_cursor/prompts" "prompts" "$source_prompts_id_map" "$dest_prompts_id_map"
+        fi
+    fi
+    
+    # Rebuild target ID mappings after processing (in case files were renamed)
+    if [ -d "$dest_cursor/rules" ]; then
+        build_id_mapping "$dest_cursor/rules" "rules" > "$dest_rules_id_map"
+    fi
+    if [ -d "$dest_cursor/prompts" ]; then
+        build_id_mapping "$dest_cursor/prompts" "prompts" > "$dest_prompts_id_map"
+    fi
+    
+    # Cleanup orphaned files
+    if [ -f "$dest_rules_id_map" ] && [ -f "$source_rules_id_map" ]; then
+        cleanup_orphaned_files "$dest_cursor" "$source_rules_id_map" "$dest_rules_id_map"
+    fi
+    if [ "$sync_type" = "all" ] && [ -f "$dest_prompts_id_map" ] && [ -f "$source_prompts_id_map" ]; then
+        cleanup_orphaned_files "$dest_cursor" "$source_prompts_id_map" "$dest_prompts_id_map"
+    fi
+    
+    # Cleanup temp files
+    rm -rf "$temp_dir"
+}
+
+# Function to process ID-based matching for a directory
+process_directory_id_matching() {
+    local source_dir="$1" dest_dir="$2" source_id_map="$4" dest_id_map="$5"
+    [ ! -d "$source_dir" ] || [ ! -d "$dest_dir" ] && return
+    
+    shopt -s nullglob dotglob
+    find "$source_dir" -type f \( -name "*.md" -o -name "*.mdc" \) | while read -r source_file; do
+        local source_relative="${source_file#$source_dir/}"
+        local source_id=$(extract_id_from_file "$source_file")
+        [ -z "$source_id" ] && continue
+        
+        local matched_relative=$(find_target_by_id "$source_id" "$dest_id_map")
+        local dest_file="$dest_dir/$source_relative"
+        
+        if [ -n "$matched_relative" ]; then
+            local matched_file="$dest_dir/$matched_relative"
+            if [ "$(basename "$matched_file")" != "$(basename "$source_file")" ] && [ -f "$matched_file" ]; then
+                info "File renamed by ID: $matched_relative → $source_relative (ID: $source_id)"
+                rm -f "$matched_file"
+            elif [ -f "$dest_file" ]; then
+                local dest_id=$(extract_id_from_file "$dest_file")
+                [ -n "$dest_id" ] && [ "$dest_id" != "$source_id" ] && \
+                    info "ID updated: $source_relative ($dest_id → $source_id)"
+            fi
+        elif [ -f "$dest_file" ]; then
+            local dest_id=$(extract_id_from_file "$dest_file")
+            if [ -n "$source_id" ] && [ -n "$dest_id" ] && [ "$source_id" != "$dest_id" ]; then
+                info "ID updated: $source_relative ($dest_id → $source_id)"
+            elif [ -n "$source_id" ] && [ -z "$dest_id" ]; then
+                info "ID added: $source_relative ($source_id)"
+            fi
+        fi
+    done
+    shopt -u nullglob dotglob
+}
+
+# Helper function to read patterns from a file (skip comments and empty lines)
+read_patterns() {
+    local file="$1"
+    if [ -f "$file" ]; then
+        while IFS= read -r line || [ -n "$line" ]; do
+            [[ -n "$line" && ! "$line" =~ ^[[:space:]]*# ]] && echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$'
+        done < "$file"
+    fi
+}
+
+# Function to build rsync include file from .syncinclude files
+build_include_file() {
+    local target_dir="$1"
+    local source_include="$SOURCE_CURSOR/.syncinclude"
+    local target_include="$target_dir/.cursor/.syncinclude"
+    
+    [ ! -f "$source_include" ] && [ ! -f "$target_include" ] && return
+    
+    local temp_file=$(mktemp)
+    read_patterns "$source_include" >> "$temp_file"
+    read_patterns "$target_include" >> "$temp_file"
+    
+    if [ -s "$temp_file" ]; then
+        local temp_expanded=$(mktemp)
+        while IFS= read -r pattern; do
+            [ -z "$pattern" ] && continue
+            [[ "$pattern" == */ ]] && echo "${pattern%/}/*" >> "$temp_expanded"
+            echo "$pattern" >> "$temp_expanded"
+            local parent="${pattern%/}"
+            while [[ "$parent" == */* ]]; do
+                parent="${parent%/*}"
+                [ -n "$parent" ] && echo "${parent}/" >> "$temp_expanded"
+            done
+        done < "$temp_file"
+        sort -u "$temp_expanded" | grep -v '^$' > "$temp_file"
+        rm -f "$temp_expanded"
+    fi
+    
+    echo "$temp_file"
+}
+
+# Function to build rsync exclude file from .syncignore files
+build_exclude_file() {
+    local target_dir="$1"
+    local temp_file=$(mktemp)
+    
+    echo ".syncignore" >> "$temp_file"
+    echo ".syncinclude" >> "$temp_file"
+    read_patterns "$SOURCE_CURSOR/.syncignore" >> "$temp_file"
+    read_patterns "$target_dir/.cursor/.syncignore" >> "$temp_file"
+    
+    [ -s "$temp_file" ] && sort -u "$temp_file" | grep -v '^$' > "${temp_file}.sorted" && mv "${temp_file}.sorted" "$temp_file"
+    echo "$temp_file"
+}
+
+# Function to sync from source to destination (one-way sync: source -> destination)
 sync_source_to_dest() {
     local dest_dir="$1"
     local sync_rules_only="$2"
@@ -420,8 +334,8 @@ sync_source_to_dest() {
     local include_file
     
     # Check for .syncinclude first (whitelist mode takes precedence)
-    include_file=$(build_include_file "$dest_dir" "to_dest")
-    exclude_file=$(build_exclude_file "$dest_dir" "to_dest")
+    include_file=$(build_include_file "$dest_dir")
+    exclude_file=$(build_exclude_file "$dest_dir")
     
     if [ "$sync_rules_only" = "y" ] || [ -z "$sync_rules_only" ]; then
         # Sync only rules directory
@@ -458,107 +372,34 @@ sync_source_to_dest() {
     
     # Clean up temp files
     rm -f "$exclude_file" "$include_file"
+    
+    # Process ID-based matching after rsync
+    if [ "$sync_rules_only" = "y" ] || [ -z "$sync_rules_only" ]; then
+        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "rules"
+    else
+        process_id_based_matching "$dest_dir/.cursor" "$SOURCE_CURSOR" "all"
+    fi
 }
 
 # Main execution
 main() {
-    local current_dir
-    local normalized_current
-    local normalized_source
-    
     info "Starting .cursor directory sync..."
+    [ ! -d "$SOURCE_CURSOR" ] && error "Source directory does not exist: $SOURCE_CURSOR" && exit 1
     
-    # Get current directory and check if we're in source
-    current_dir=$(pwd)
-    normalized_current=$(normalize_path "$current_dir")
-    normalized_source=$(normalize_path "$SOURCE_DIR")
-    
-    # If running from source directory, no special handling needed
-    if [[ "$normalized_current" == "$normalized_source" ]]; then
-        info "Running from source directory"
-    fi
-    
-    # Check if source directory exists
-    if [ ! -d "$SOURCE_CURSOR" ]; then
-        error "Source directory does not exist: $SOURCE_CURSOR"
-        exit 1
-    fi
-    
-    # Create meta.json if it doesn't exist
-    if [ ! -f "$META_FILE" ]; then
-        local current_date=$(get_current_date)
-        if command -v jq &> /dev/null; then
-            jq -n --arg version "1.0.0" --arg date "$current_date" '{version: $version, last_updated: $date}' > "$META_FILE"
-        elif command -v python3 &> /dev/null; then
-            python3 << EOF
-import json
-data = {"version": "1.0.0", "last_updated": "$current_date"}
-with open('$META_FILE', 'w') as f:
-    json.dump(data, f, indent=4)
-EOF
-        else
-            cat > "$META_FILE" << EOF
-{
-    "version": "1.0.0",
-    "last_updated": "$current_date"
-}
-EOF
-        fi
-        info "Created meta.json with initial version 1.0.0"
-    fi
-    
-    # Ask for sync type
     echo -n "Do you want to sync only rules? (Y/n): "
     read -r sync_rules_only
-    sync_rules_only="${sync_rules_only:-y}"  # Default to 'y'
+    sync_rules_only="${sync_rules_only:-y}"
     
-    # Get current version
-    current_version=$(read_version)
-    info "Current version: $current_version"
-    
-    # Step 1: Check all destinations for updates
-    info "Checking destinations for updates..."
-    source_updated=false
-    
-    while IFS= read -r dest_dir; do
-        if [ -d "$dest_dir/.cursor" ]; then
-            if sync_dest_to_source "$dest_dir"; then
-                source_updated=true
-            fi
-        fi
-    done < <(get_destinations)
-    
-    # Step 2: Increment version if source was updated
-    if [ "$source_updated" = true ]; then
-        new_version=$(increment_version)
-        success "Version updated: $current_version -> $new_version"
-    fi
-    
-    # Step 3: Sync source to all destinations
     info "Syncing source to all destinations..."
-    dest_count=0
+    local dest_count=0
     
     while IFS= read -r dest_dir; do
-        # Skip if .cursor directory doesn't exist
-        if [ ! -d "$dest_dir/.cursor" ]; then
-            info "Skipping $dest_dir (no .cursor directory)"
-            continue
-        fi
-        
+        [ ! -d "$dest_dir/.cursor" ] && info "Skipping $dest_dir (no .cursor directory)" && continue
         sync_source_to_dest "$dest_dir" "$sync_rules_only"
         dest_count=$((dest_count + 1))
     done < <(get_destinations)
     
-    if [ $dest_count -eq 0 ]; then
-        warning "No destination directories found"
-    else
-        success "Synced to $dest_count destination(s)"
-    fi
-    
-    # Display final version
-    final_version=$(read_version)
-    info "Final version: $final_version"
-    
+    [ $dest_count -eq 0 ] && warning "No destination directories found" || success "Synced to $dest_count destination(s)"
     success "Sync completed!"
 }
 
