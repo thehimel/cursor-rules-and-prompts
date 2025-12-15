@@ -49,7 +49,19 @@ Create a clear, hierarchical markdown document with:
 * Cross-reference information between transcript and additional resources to create a comprehensive document
 * Maintain consistency in formatting and structure when combining multiple sources
 
-### 5. Additional Instructions
+### 5. Saving Transcript in SRT Format
+
+* **Location**: Save the transcript in SRT format in the same directory where the markdown file is saved
+* **File Naming**: Use the same base name as the markdown file with `.srt` extension (e.g., if markdown is `lesson.md`, save as `lesson.srt`)
+* **Conditional Saving**: Only save the SRT file if it does not already exist in the repository
+* **SRT Format**: Ensure the transcript is saved in proper SRT subtitle format with:
+  * Sequential subtitle numbers
+  * Timestamp format: `HH:MM:SS,mmm --> HH:MM:SS,mmm`
+  * Text content for each subtitle entry
+  * Blank lines between subtitle entries
+* **Check Before Saving**: Always check if an SRT file with the same name already exists in the target directory before creating a new one
+
+### 6. Additional Instructions
 
 * Use code blocks or special formatting for technical terms or examples
 * Include brief explanatory notes where helpful
@@ -57,7 +69,7 @@ Create a clear, hierarchical markdown document with:
 * Always use a next-line character after a header
 * Process the transcript paying special attention to details
 
-### 6. Required Sections
+### 7. Required Sections
 
 #### Commands Section
 
@@ -67,7 +79,7 @@ At the top of the document, create a "Commands" section that lists all commands 
 
 Always keep a summary section written in points. Use unordered lists (not numeric lists) for all summaries and content.
 
-### 7. Formatting Rules
+### 8. Formatting Rules
 
 * Always use unordered lists (`*`) instead of numeric lists
 * **Line Wrapping Rule**: All text (paragraphs, list items, and summary points) should be wrapped at word boundaries to maximize line length, staying as close to 120 characters as possible. Avoid unnecessary breaks—only break when approaching the 120-character limit.
@@ -99,7 +111,8 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 5. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
 6. **Format**: Apply markdown formatting with proper line breaks and list formatting
 7. **Review**: Ensure all text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as possible, avoiding unnecessary breaks, and summary is in point form
-8. **Output**: Deliver a well-structured markdown document that integrates content from all provided resources
+8. **Save SRT File**: Check if an SRT file with the same name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
+9. **Output**: Deliver a well-structured markdown document that integrates content from all provided resources
 
 ## Example Structure
 
@@ -148,3 +161,5 @@ Content here...
 * [ ] Important terms, concepts, benefits, and key points are bolded throughout the document
 * [ ] Educational flow is maintained
 * [ ] Document serves as a useful reference or study guide
+* [ ] SRT file has been saved in the same directory as the markdown file (only if it didn't already exist)
+* [ ] SRT file follows proper SRT format with sequential numbers, timestamps, and text content
