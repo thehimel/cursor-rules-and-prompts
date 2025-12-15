@@ -6,7 +6,7 @@ description: Guidelines for converting transcripts into well-structured markdown
 
 # Transcript to Markdown Conversion Prompt
 
-Transform transcripts (provided as text or via file) into well-structured markdown documents following these guidelines. If additional resources such as slide PDFs, presentation materials, or supplementary content are provided along with the transcript, combine all resources with the transcript to generate a comprehensive output.
+Transform transcripts (provided as text or via file) into well-structured markdown documents following these guidelines. The transcript is the PRIMARY source for content. If additional resources such as slide PDFs, presentation materials, or supplementary content are provided, use them ONLY to enhance or supplement content that is already covered in the transcript. Do not include information from additional resources that is not mentioned or related to topics in the transcript.
 
 ## Transformation Guidelines
 
@@ -42,12 +42,18 @@ Create a clear, hierarchical markdown document with:
 
 ### 4. Handling Additional Resources
 
-* If additional resources are provided (e.g., slide PDFs, presentation materials, supplementary documents), combine them with the transcript content
-* Extract relevant information from all provided resources
-* Integrate content from additional resources seamlessly into the markdown structure
-* Ensure information from slides and other materials complements and enhances the transcript content
-* Cross-reference information between transcript and additional resources to create a comprehensive document
-* Maintain consistency in formatting and structure when combining multiple sources
+**Important**: Additional resources (e.g., slide PDFs, presentation materials, supplementary documents) may be for a single lesson, an entire chapter, or even the whole course. Only use content from these resources that relates to topics already covered in the transcript.
+
+**Guidelines for using additional resources:**
+* The **transcript is the primary source** - use it to determine what topics and concepts to include
+* **Only extract information** from additional resources that enhances, clarifies, or provides details about content mentioned in the transcript
+* **Do not include** information from additional resources that is not related to topics covered in the transcript
+* Use additional resources to:
+  * Provide code examples or technical details for concepts mentioned in the transcript
+  * Add visual descriptions or structured information that supports transcript content
+  * Enhance explanations with definitions, examples, or clarifications
+* Maintain consistency in formatting and structure when integrating supplemental content
+* If a topic is mentioned in the transcript but not detailed, use additional resources to provide that detail
 
 ### 5. Saving Transcript in SRT Format
 
@@ -73,7 +79,7 @@ Create a clear, hierarchical markdown document with:
 
 #### Commands Section
 
-At the top of the document, create a "Commands" section that lists all commands used in the transcript. This section is for fast reading and quick reference.
+At the top of the document, create a "Commands" section that lists all commands used in the transcript. Include commands from additional resources only if they relate to concepts or examples mentioned in the transcript. This section is for fast reading and quick reference.
 
 #### Summary Section
 
@@ -105,14 +111,15 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 ## Processing Workflow
 
 1. **Input**: Receive transcript as text or file, along with any additional resources (e.g., slide PDFs, presentation materials)
-2. **Combine Resources**: If additional resources are provided, extract and combine relevant content from all sources with the transcript
-3. **Extract Commands**: Identify and list all commands from the transcript and any additional resources in the "Commands" section
-4. **Structure Content**: Organize combined content into logical sections with appropriate headers
-5. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
-6. **Format**: Apply markdown formatting with proper line breaks and list formatting
-7. **Review**: Ensure all text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as possible, avoiding unnecessary breaks, and summary is in point form
-8. **Save SRT File**: Check if an SRT file with the same name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
-9. **Output**: Deliver a well-structured markdown document that integrates content from all provided resources
+2. **Analyze Transcript**: Identify all topics, concepts, and commands mentioned in the transcript - this determines what content to include
+3. **Filter Additional Resources**: Review additional resources and identify only the content that relates to topics covered in the transcript
+4. **Extract Commands**: Identify and list all commands from the transcript and any related commands from additional resources that support transcript content
+5. **Structure Content**: Organize transcript content into logical sections with appropriate headers, using additional resources to enhance details where relevant
+6. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
+7. **Format**: Apply markdown formatting with proper line breaks and list formatting
+8. **Review**: Ensure all text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as possible, avoiding unnecessary breaks, and summary is in point form
+9. **Save SRT File**: Check if an SRT file with the same name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
+10. **Output**: Deliver a well-structured markdown document based primarily on the transcript, with supplemental content from additional resources only where it enhances transcript topics
 
 ## Example Structure
 
