@@ -24,8 +24,11 @@ When using this prompt, provide:
 
 - Extract chapter titles and descriptions from screenshots
 - Identify all lessons within each chapter
+- **Critical**: Determine if items are at the same level or nested
+  - If all items appear at the same visual level in the list/screenshot, they are all lessons at the same level
+  - Only create section folders if there's a clear hierarchical grouping with nested items
+  - Items at the same level should be created as lessons at the same level, not nested in section folders
 - Count total number of chapters and lessons per chapter
-- Note any section groupings or hierarchical structures
 - Extract lesson titles and any descriptions
 
 ### Determine Numbering Format
@@ -54,15 +57,19 @@ When using this prompt, provide:
 #### Lesson Folders
 
 - Create numbered lesson folders within each chapter: `N-lesson-name` or `NN-lesson-name`
+- **Important**: All items that appear at the same level in the screenshot/list should be created as lessons at the same level within the chapter
+- Do not nest lessons in section folders unless there's a clear hierarchical grouping
 - Use single digits (1, 2, 3, ...) if 9 or fewer lessons in the chapter
 - Use zero-padded double digits (01, 02, 03, ...) if 10 or more lessons in the chapter
 - Use lowercase with dashes separating words
 - Make names concise and descriptive
 - Number lessons sequentially within each chapter starting from 1 or 01
 
-#### Section Folders (if applicable)
+#### Section Folders (only if clearly hierarchical)
 
-- If lessons are grouped into sections, create section folders first
+- **Only create section folders if there's a clear visual hierarchy with nested items**
+- If all items appear at the same level, create them all as lessons at the chapter level instead
+- If sections are needed, create section folders first
 - Format: `N-section-name` or `NN-section-name`
 - Use single digits if 9 or fewer sections, zero-padded double digits if 10 or more
 - Then create lesson folders within sections: `N-lesson-name` or `NN-lesson-name`
@@ -154,6 +161,8 @@ course-directory/
 ## Guidelines
 
 - Always use numbered prefixes for chapters and lessons
+- **Same-level items rule**: Items appearing at the same visual level in screenshots/lists should be created as lessons at the same level, not nested in section folders
+- Only create section folders when there's a clear hierarchical grouping with nested items
 - Determine numbering format based on count:
   - Single digits (1-9) for 9 or fewer items
   - Zero-padded double digits (01-99) for 10 or more items
@@ -182,6 +191,8 @@ After creating the structure:
 ## Remember
 
 - The goal is to create a clean, organized folder structure
+- **Items at the same level in screenshots should be lessons at the same level** - do not create unnecessary section folders
+- Only create section folders when there's a clear hierarchical grouping with nested items
 - Naming should be consistent and follow conventions
 - Numbering format depends on count: single digits (≤9) or zero-padded double digits (≥10)
 - Apply numbering format consistently within each level
