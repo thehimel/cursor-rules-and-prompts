@@ -78,6 +78,42 @@ Common parts of speech to identify:
 - **pronoun**: Replaces nouns
 - **phrase**: Multi-word expression
 
+### Vocabulary Organization
+
+The vocabulary table must be organized according to the following hierarchy:
+
+1. **Basic/Fundamental Words First** - Place basic, fundamental words at the top of the table. These are core words that form the foundation of the topic (e.g., "state", "law", "people"). Basic words typically:
+   - Are simple, root words without prefixes or suffixes
+   - Represent fundamental concepts
+   - Are frequently used throughout the content
+   - Form the basis for compound or derived words
+
+2. **Group Similar Words Together** - Words that share a root, are related, or are compound words containing the same base should be placed immediately after one another. Similar words include:
+   - Compound words sharing the same root (e.g., "Rechtsstaat", "Bundesstaat" both contain "Staat")
+   - Words with the same prefix or suffix
+   - Related concepts or terms
+   - Words that are semantically connected
+
+3. **Place Opposites After Similar Words** - Opposite or contrasting words should be placed immediately after their similar counterparts. This helps learners understand relationships and contrasts:
+   - If "democratic" appears, place "dictatorship" nearby
+   - If "freedom" appears, place related restrictions nearby
+   - Group antonyms or contrasting concepts together
+
+**Organization Example:**
+```
+| Staat | state | noun | ... |
+| Gesetze | laws | noun | ... |
+| Rechtsstaat | constitutional state | noun | ... |
+| Bundesstaat | federal state | noun | ... |
+| Diktatur | dictatorship | noun | ... |
+| Monarchie | monarchy | noun | ... |
+```
+
+In this example:
+- "Staat" and "Gesetze" are basic words (top)
+- "Rechtsstaat" and "Bundesstaat" are similar (both contain "Staat") - grouped together
+- "Diktatur" and "Monarchie" are opposites/contrasts to democratic concepts - placed after similar words
+
 ## Process Steps
 
 1. **Analyze content** - Review all questions and correct answers in each topic
@@ -85,9 +121,13 @@ Common parts of speech to identify:
 3. **Filter unnecessary terms** - Remove words that only appear in incorrect options
 4. **Identify parts of speech** - Determine grammatical category for each word
 5. **Create translations** - Provide clear English translations
-6. **Generate links** - Create anchor links to source questions
-7. **Format table** - Organize vocabulary in the specified table format
-8. **Insert section** - Place vocabulary section in appropriate location
+6. **Organize vocabulary** - Arrange words according to organization hierarchy:
+   - Place basic/fundamental words at the top
+   - Group similar words together sequentially
+   - Place opposite/contrasting words after their similar counterparts
+7. **Generate links** - Create anchor links to source questions
+8. **Format table** - Organize vocabulary in the specified table format
+9. **Insert section** - Place vocabulary section in appropriate location
 
 ## Quality Checklist
 
@@ -101,6 +141,9 @@ Before completion, verify:
 - ✅ Table format is consistent
 - ✅ Vocabulary section is properly placed
 - ✅ All necessary words for understanding are included
+- ✅ Basic/fundamental words are at the top
+- ✅ Similar words are grouped together sequentially
+- ✅ Opposite/contrasting words follow their similar counterparts
 
 ## Important Notes
 
