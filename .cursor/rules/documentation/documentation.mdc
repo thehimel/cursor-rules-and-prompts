@@ -1,7 +1,7 @@
 ---
 id: rule-documentation-documentation
 alwaysApply: true
-description: Rules for documentation structure, file naming conventions, code comments style, and linking patterns. Ensures consistent markdown organization and neutral, professional documentation.
+description: Rules for documentation structure, file naming conventions, source attribution, code comments style, and linking patterns. Ensures consistent markdown organization and neutral, professional documentation.
 author: Himel Das
 ---
 
@@ -10,6 +10,25 @@ author: Himel Das
 ## File Structure
 - When creating multiple md files for a feature, create a dedicated directory in `docs/`
 - Each feature directory MUST have a `README.md` file
+
+## Source Links
+- ✅ If a source URL or link is provided during documentation creation, include it below the header
+- ✅ Format: `[Source](URL)` placed directly after the main title
+- ✅ Use markdown link format for consistency
+- ❌ Don't include source links if no URL is provided
+- ❌ Don't place source links in other locations (e.g., footer, separate section)
+
+### Examples
+- ✅ Good:
+  ```markdown
+  # Document Title
+
+  [Source](https://example.com/resource)
+  
+  ## Section 1
+  ```
+- ❌ Bad: Placing source link at the end or in a separate section
+- ❌ Bad: Including source link when no URL is provided
 
 ## File Naming
 - Use lowercase words separated by dashes
