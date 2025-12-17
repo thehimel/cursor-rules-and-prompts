@@ -58,14 +58,16 @@ Create a clear, hierarchical markdown document with:
 ### 5. Saving Transcript in SRT Format
 
 * **Location**: Save the transcript in SRT format in the same directory where the markdown file is saved
-* **File Naming**: Use the same base name as the markdown file with `.srt` extension (e.g., if markdown is `lesson.md`, save as `lesson.srt`)
+* **File Naming**: 
+  * If the target markdown file has a generic name (case-insensitive) such as `readme`, `index`, `README`, `INDEX`, etc., save the SRT file as `transcript.srt`
+  * Otherwise, use the same base name as the markdown file with `.srt` extension (e.g., if markdown is `lesson.md`, save as `lesson.srt`)
 * **Conditional Saving**: Only save the SRT file if it does not already exist in the repository
 * **SRT Format**: Ensure the transcript is saved in proper SRT subtitle format with:
   * Sequential subtitle numbers
   * Timestamp format: `HH:MM:SS,mmm --> HH:MM:SS,mmm`
   * Text content for each subtitle entry
   * Blank lines between subtitle entries
-* **Check Before Saving**: Always check if an SRT file with the same name already exists in the target directory before creating a new one
+* **Check Before Saving**: Always check if an SRT file with the determined name already exists in the target directory before creating a new one
 
 ### 6. Additional Instructions
 
@@ -80,6 +82,16 @@ Create a clear, hierarchical markdown document with:
 #### Commands Section
 
 At the top of the document, create a "Commands" section that lists all commands used in the transcript. Include commands from additional resources only if they relate to concepts or examples mentioned in the transcript. This section is for fast reading and quick reference.
+
+**Command Formatting**: For each command, always include:
+1. The command syntax/pattern with placeholders (e.g., `<parameter>`, `[optional_arg]`) to show the structure
+2. A concrete example showing actual values
+
+**Example:**
+* `command-name <required-arg> [optional-arg]`
+* `command-name actual-value --flag`
+
+This format makes it easy to remember the command structure while also providing a practical example.
 
 #### Summary Section
 
@@ -113,12 +125,12 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 1. **Input**: Receive transcript as text or file, along with any additional resources (e.g., slide PDFs, presentation materials)
 2. **Analyze Transcript**: Identify all topics, concepts, and commands mentioned in the transcript - this determines what content to include
 3. **Filter Additional Resources**: Review additional resources and identify only the content that relates to topics covered in the transcript
-4. **Extract Commands**: Identify and list all commands from the transcript and any related commands from additional resources that support transcript content
+4. **Extract Commands**: Identify and list all commands from the transcript and any related commands from additional resources that support transcript content. For each command, include both the syntax/pattern with placeholders and a concrete example
 5. **Structure Content**: Organize transcript content into logical sections with appropriate headers, using additional resources to enhance details where relevant
 6. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
 7. **Format**: Apply markdown formatting with proper line breaks and list formatting
 8. **Review**: Ensure all text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as possible, avoiding unnecessary breaks, and summary is in point form
-9. **Save SRT File**: Check if an SRT file with the same name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
+9. **Save SRT File**: Determine the SRT filename based on the markdown filename (use `transcript.srt` for generic names like `readme` or `index`, otherwise use the same base name). Check if an SRT file with the determined name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
 10. **Output**: Deliver a well-structured markdown document based primarily on the transcript, with supplemental content from additional resources only where it enhances transcript topics
 
 ## Example Structure
@@ -128,9 +140,12 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 
 ## Commands
 
-* `command1 --option value`
-* `command2 -flag argument`
-* `command3 subcommand`
+* `command1 --option <value>`
+* `command1 --option example-value`
+* `command2 -flag <argument>`
+* `command2 -flag example-argument`
+* `command3 <subcommand>`
+* `command3 example-subcommand`
 
 ## Summary
 
@@ -156,7 +171,7 @@ Content here...
 ## Quality Checklist
 
 * [ ] Main title reflects the overall topic
-* [ ] Commands section exists at the top with all commands listed
+* [ ] Commands section exists at the top with all commands listed, each showing both syntax/pattern with placeholders and a concrete example
 * [ ] Summary section uses unordered lists
 * [ ] All headers have next-line characters after them
 * [ ] No timestamps or speaker identifiers remain
@@ -169,4 +184,5 @@ Content here...
 * [ ] Educational flow is maintained
 * [ ] Document serves as a useful reference or study guide
 * [ ] SRT file has been saved in the same directory as the markdown file (only if it didn't already exist)
+* [ ] SRT file naming follows the rule: `transcript.srt` for generic filenames (readme, index, etc.), otherwise same name as markdown file
 * [ ] SRT file follows proper SRT format with sequential numbers, timestamps, and text content
