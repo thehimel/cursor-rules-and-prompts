@@ -101,7 +101,7 @@ Each topic's `README.md` should include:
 #### Required Sections
 
 1. **Key Takeaways**
-   * Most important points to remember
+   * Most important points to remember (use unordered list with bullets)
    * Common patterns
    * Critical concepts
    * Quick summary for revision
@@ -292,7 +292,7 @@ notes/
 * [ ] All relevant images copied to appropriate `assets/` folders
 * [ ] Images referenced correctly in markdown with relative paths
 * [ ] Each topic has comprehensive content following the structure
-* [ ] Key takeaways listed at the beginning of each topic for quick revision
+* [ ] Key takeaways listed at the beginning of each topic for quick revision (using unordered lists)
 * [ ] Code examples included with explanations
 * [ ] Architecture diagrams and visuals present
 * [ ] Quick reference tables included
