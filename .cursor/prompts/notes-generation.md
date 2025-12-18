@@ -53,6 +53,35 @@ notes/
 * Create an `assets/` folder in each topic/subtopic directory
 * Place a `README.md` in each directory to hold the notes
 
+### README Files at Different Levels
+
+Create README files at multiple levels of the directory hierarchy:
+
+**Main README** (`notes/README.md`):
+* Comprehensive overview of all topics
+* Study strategy and timeline
+* Key focus areas across all topics
+* Quick reference cheat sheet
+* How to use the notes
+* Exam/study tips
+* Navigation to all sections
+
+**Section README** (e.g., `notes/topic-1/README.md`):
+* Overview of what's covered in this section
+* Detailed breakdown of subtopics with bullet points
+* Why this section matters (relevance)
+* Key focus areas for this section
+* Study approach specific to this section
+* Quick tips and memorable one-liners
+* Navigation links to subtopics and other sections
+
+**Subtopic README** (e.g., `notes/topic-1/subtopic-1/README.md`):
+* Detailed content with key takeaways
+* Core concepts and explanations
+* Code examples and practical guidance
+* Visual aids and reference tables
+* Practice questions
+
 ## Content Generation Process
 
 ### Step 1: Explore Resources
@@ -96,9 +125,75 @@ When source materials contain images:
 
 ### Step 4: Content Structure
 
-Each topic's `README.md` should include:
+Different README files have different purposes and structures:
 
-#### Required Sections
+#### Main README Structure (notes/README.md)
+
+1. **Title and Overview**
+   * Brief description of the study material
+   * Purpose and context
+
+2. **Study Strategy**
+   * Week-by-week or phase-by-phase study plan
+   * How to approach the material
+   * Time estimates
+
+3. **Topic Overview**
+   * List of all major sections
+   * What each section covers
+   * Exam weight or importance
+
+4. **Key Focus Areas**
+   * Most important topics across all sections
+   * Common patterns to remember
+   * Critical concepts that appear frequently
+
+5. **Quick Reference Cheat Sheet**
+   * One-page summary of essential information
+   * Formulas, commands, syntax
+   * Quick lookup tables
+
+6. **How to Use These Notes**
+   * For initial study
+   * For revision
+   * Before exam/assessment
+
+7. **Tips and Best Practices**
+   * Exam-taking strategies
+   * Study tips
+   * Common pitfalls to avoid
+
+8. **Navigation**
+   * Links to all major sections
+
+#### Section README Structure (notes/topic-1/README.md)
+
+1. **Section Title**
+   * What this section covers
+
+2. **Overview and Breakdown**
+   * Detailed list of subtopics
+   * What each subtopic contains
+   * Why this section matters
+
+3. **Key Focus Areas**
+   * Most important topics in this section
+   * Specific to this section only
+
+4. **Study Approach**
+   * How to study this section effectively
+   * Recommended exercises
+   * Practical tips
+
+5. **Quick Tips**
+   * Memorable one-liners
+   * Key concepts to remember
+   * Common patterns
+
+6. **Navigation**
+   * Links to subtopics and other sections
+
+#### Subtopic README Structure (notes/topic-1/subtopic-1/README.md)
 
 1. **Key Takeaways**
    * Most important points to remember (use unordered list with bullets)
@@ -243,67 +338,104 @@ When multiple resources cover the same topic:
 2. **Create Directories**
    * Create all topic/subtopic folders
    * Create `assets/` folders in each
-   * Create empty `README.md` files
+   * Create empty `README.md` files at all levels
 
 3. **Map Resources**
    * Identify which resources cover which topics
    * Note which images relate to which topics
    * Plan content organization
 
-4. **Generate Content**
-   * Start with first topic
+4. **Generate Main README**
+   * Create comprehensive overview of all topics
+   * Include study strategy and timeline
+   * Add quick reference cheat sheet
+   * Provide exam/study tips
+   * Add navigation links
+
+5. **Generate Section READMEs**
+   * For each major section (topic-1, topic-2, etc.)
+   * Create section overview with subtopic breakdown
+   * Explain why the section matters
+   * Provide section-specific study approach
+   * Add quick tips and navigation
+
+6. **Generate Subtopic Content**
+   * Start with first subtopic
    * Read all relevant source materials deeply
    * Copy relevant images to assets folder
    * Write comprehensive notes following structure
    * Include code examples from sources
    * Add practice questions
 
-5. **Review and Refine**
+7. **Review and Refine**
    * Verify all topics are covered
+   * Check all README files exist at appropriate levels
    * Check all images are copied and referenced
    * Ensure consistent formatting
    * Verify technical accuracy
    * Test that notes are comprehensive
+   * Verify navigation links work correctly
 
 ## Example Directory After Generation
 
 ```
 notes/
+├── README.md (main overview with study guide, cheat sheet, navigation)
 ├── fundamentals/
+│   ├── README.md (section overview with subtopic breakdown, study approach)
 │   ├── basic-concepts/
 │   │   ├── assets/
 │   │   │   ├── architecture-diagram.png
 │   │   │   ├── workflow-chart.png
 │   │   │   └── component-view.png
-│   │   └── README.md (comprehensive notes)
-│   ├── advanced-features/
-│   │   ├── assets/
-│   │   │   ├── advanced-architecture.png
-│   │   │   └── use-case-diagram.png
-│   │   └── README.md
-│   └── README.md (topic overview)
-└── README.md (main index)
+│   │   └── README.md (detailed content with key takeaways, examples, questions)
+│   └── advanced-features/
+│       ├── assets/
+│       │   ├── advanced-architecture.png
+│       │   └── use-case-diagram.png
+│       └── README.md (detailed content with key takeaways, examples, questions)
+└── task-management/
+    ├── README.md (section overview with subtopic breakdown, study approach)
+    └── operators/
+        ├── assets/
+        └── README.md (detailed content with key takeaways, examples, questions)
 ```
 
 ## Quality Checklist
 
+### Directory Structure
 * [ ] All directories created with proper structure
 * [ ] All `assets/` folders exist where needed
-* [ ] All relevant images copied to appropriate `assets/` folders
-* [ ] Images referenced correctly in markdown with relative paths
-* [ ] Each topic has comprehensive content following the structure
-* [ ] Key takeaways listed at the beginning of each topic for quick revision (using unordered lists)
+* [ ] README files exist at all appropriate levels (main, section, subtopic)
+
+### Content Quality
+* [ ] Main README provides comprehensive overview and study guide
+* [ ] Section READMEs provide topic breakdown and study approach
+* [ ] Subtopic READMEs have detailed content following the structure
+* [ ] Key takeaways listed at the beginning of each subtopic for quick revision (using unordered lists)
 * [ ] Code examples included with explanations
 * [ ] Architecture diagrams and visuals present
 * [ ] Quick reference tables included
 * [ ] Practice questions with answers included
+* [ ] Content is accurate to source materials
+* [ ] Notes are comprehensive enough to learn from alone
+
+### Images and References
+* [ ] All relevant images copied to appropriate `assets/` folders
+* [ ] Images referenced correctly in markdown with relative paths
+
+### Navigation and Formatting
+* [ ] Navigation links work correctly between sections
 * [ ] Writing style is natural and human-like
 * [ ] Formatting is consistent (bold, code, lists, tables)
-* [ ] Content is accurate to source materials
-* [ ] Study tips integrated into relevant sections
-* [ ] Notes are comprehensive enough to learn from alone
 * [ ] All sections properly separated with spacing
 * [ ] Horizontal rules used appropriately for visual separation
+
+### Study Integration
+* [ ] Study tips integrated into relevant sections
+* [ ] Study strategy provided in main README
+* [ ] Quick tips included in section READMEs
+* [ ] Exam focus areas highlighted throughout
 
 ## Copyright and Attribution
 
