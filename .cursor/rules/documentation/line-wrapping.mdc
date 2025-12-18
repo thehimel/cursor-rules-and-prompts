@@ -1,0 +1,29 @@
+---
+id: rule-documentation-line-wrapping
+alwaysApply: false
+description: Guidelines for wrapping text lines at approximately 120 characters for better readability in documentation
+author: Himel Das
+---
+
+# Line Wrapping Rule
+
+## Core Principle
+
+All text (paragraphs, list items, and summary points) should be wrapped at word boundaries to maximize line length, staying as close to 120 characters as possible. Avoid unnecessary breaks—only break when approaching the 120-character limit.
+
+## Formatting Guidelines
+
+### Paragraph Formatting
+
+Paragraphs should be wrapped at word boundaries, with each line as close to 120 characters as possible. Separate paragraphs with blank lines. Do not create unnecessarily short lines—maximize usage of the 120-character limit.
+
+### List Item Formatting
+
+List items and summary points should also be wrapped at word boundaries, maximizing line length close to 120 characters.
+
+## Example
+
+For a long sentence like "The implementation of this feature requires careful consideration of multiple factors including performance optimization, security best practices, and user experience design", wrap at word boundaries to maximize usage:
+
+- Line 1: "The implementation of this feature requires careful consideration of multiple factors including performance optimization, security" (close to 120 chars)
+- Line 2: "best practices, and user experience design." (continuation)

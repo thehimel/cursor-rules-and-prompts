@@ -100,15 +100,6 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 ### 8. Formatting Rules
 
 * Always use unordered lists (`*`) instead of numeric lists
-* **Line Wrapping Rule**: All text (paragraphs, list items, and summary points) should be wrapped at word boundaries to maximize line length, staying as close to 120 characters as possible. Avoid unnecessary breaks—only break when approaching the 120-character limit.
-* **Paragraph Formatting**: Paragraphs should be wrapped at word boundaries, with each line as close to 120 characters as
-  possible. Separate paragraphs with blank lines. Do not create unnecessarily short lines—maximize usage of the 120-character
-  limit.
-* **List Item Formatting**: List items and summary points should also be wrapped at word boundaries, maximizing line length
-  close to 120 characters.
-* **Line Wrapping Example**: For a long sentence like "The implementation of this feature requires careful consideration of multiple factors including performance optimization, security best practices, and user experience design", wrap at word boundaries to maximize usage:
-  * Line 1: "The implementation of this feature requires careful consideration of multiple factors including performance optimization, security" (close to 120 chars)
-  * Line 2: "best practices, and user experience design." (continuation)
 * Maintain proper markdown syntax throughout
 * Use code blocks for commands, code snippets, or technical examples
 * **Bold important terms and concepts**: Always bold key terms, important concepts, main benefits, critical phrases, and
@@ -129,7 +120,7 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 5. **Structure Content**: Organize transcript content into logical sections with appropriate headers, using additional resources to enhance details where relevant
 6. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
 7. **Format**: Apply markdown formatting with proper line breaks and list formatting
-8. **Review**: Ensure all text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as possible, avoiding unnecessary breaks, and summary is in point form
+8. **Review**: Ensure summary is in point form
 9. **Save SRT File**: Determine the SRT filename based on the markdown filename (use `transcript.srt` for generic names like `readme` or `index`, otherwise use the same base name). Check if an SRT file with the determined name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
 10. **Output**: Deliver a well-structured markdown document based primarily on the transcript, with supplemental content from additional resources only where it enhances transcript topics
 
@@ -177,8 +168,6 @@ Content here...
 * [ ] No timestamps or speaker identifiers remain
 * [ ] Conversational elements have been removed (greetings, transitional phrases, future references)
 * [ ] Content is organized into logical sections
-* [ ] All text (paragraphs, list items, summary points) is wrapped at word boundaries as close to 120 characters as
-  possible, avoiding unnecessary breaks
 * [ ] Technical terms are properly formatted
 * [ ] Important terms, concepts, benefits, and key points are bolded throughout the document
 * [ ] Educational flow is maintained

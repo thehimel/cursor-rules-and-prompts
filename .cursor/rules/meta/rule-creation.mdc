@@ -1,7 +1,7 @@
 ---
 id: rule-meta-rule-creation
 alwaysApply: true
-description: Guidelines for creating new agent rules - categorize rules appropriately, use required frontmatter fields, keep rules concise and generic, avoid project-specific details.
+description: Guidelines for creating concise, generic rules and prompts with required frontmatter
 author: Himel Das
 ---
 
@@ -9,13 +9,10 @@ author: Himel Das
 
 ## Category Organization
 
-- Each directory in the rules folder represents a category
-- When creating a new rule, attempt to fit it into an existing category
-- Only create a new category if the rule cannot fit into any existing category
+- Fit new rules into existing categories when possible
+- Only create new categories when necessary
 
 ## Required Frontmatter
-
-All rule files must include these fields in order:
 
 ```
 ---
@@ -26,28 +23,17 @@ author: Himel Das
 ---
 ```
 
-### ID Field
-
-- **Required**: Every rule file must have a unique `id` field
-- **Format**: `rule-{category}-{filename-without-ext}`
-  - `{category}` is the directory name (e.g., `academic`, `general`, `meta`)
-  - `{filename-without-ext}` is the filename without the `.mdc` extension
-- **Examples**:
-  - `rule-academic-copyright-and-genericity` (file: `academic/copyright-and-genericity.mdc`)
-  - `rule-meta-rule-creation` (file: `meta/rule-creation.mdc`)
-  - `rule-general-file-organization` (file: `general/file-organization.mdc`)
-- **Purpose**: Enables ID-based file matching during sync operations, allowing files to be tracked even when renamed
+**ID Format**: `rule-{category}-{filename-without-ext}`
+- Example: `rule-general-file-organization` for `general/file-organization.mdc`
+- Enables file tracking during sync operations
 
 ## Content Guidelines
 
-- Be concise and generic
-- Remain project and programming language independent
-- Avoid code snippets, examples, or project-specific information
-- Do not include confidential or personal information
-- Explain what to do, not how to do it
-- Follow professional best practices for AI agent rules
+- Keep rules and prompts concise
+- Stay generic and language-independent
+- Avoid project-specific details or confidential information
+- Focus on what to do, not how to do it
 
 ## File Format
 
-- Always save rules in `.mdc` files
-- Use lowercase words separated by dashes for filenames
+- Save rules as `.mdc` files with kebab-case names

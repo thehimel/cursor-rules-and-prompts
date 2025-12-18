@@ -139,13 +139,6 @@ Create a single, well-organized markdown document that serves as a complete refe
 * Use code blocks for command examples and syntax
 * Maintain consistent formatting throughout
 
-### Line Wrapping
-
-* Wrap text at word boundaries
-* Target approximately 120 characters per line
-* Avoid unnecessary line breaks
-* Keep paragraphs readable and well-formatted
-
 ### List Formatting
 
 * Use unordered lists (`*`) for all lists
