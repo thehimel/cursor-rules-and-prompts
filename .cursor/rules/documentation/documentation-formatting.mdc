@@ -52,6 +52,15 @@ Convert series of related examples or points into bulleted lists:
 - Bold the key term at the start of each bullet when listing different types or examples
 - Keep list items parallel in structure
 
+### Tables
+
+**Always format tables with proper column alignment** for better readability:
+- Align column separators (`|`) vertically
+- Use consistent spacing within columns
+- Pad shorter entries with spaces to match column width
+- Bold important entries when needed
+- Use emoji indicators (✅, ❌, ⚠️) for status columns when helpful
+
 ### Exercise Questions and Answer Options
 
 When formatting multiple-choice questions or exercises with answer options, use checkbox symbols to indicate correct and incorrect answers:
@@ -110,6 +119,7 @@ When formatting documentation, ensure:
 ✅ Code snippets and technical terms use backticks
 ✅ Important distinctions are emphasized with bold or italic
 ✅ Power notations use superscript format (10⁴, N², 2ⁿ) instead of caret notation
+✅ Tables are properly aligned with consistent column spacing
 ✅ Exercise answer options use checkbox symbols (✓ for correct, □ for incorrect)
 ✅ The text is easy to scan visually
 
