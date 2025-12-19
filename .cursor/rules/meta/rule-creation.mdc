@@ -34,6 +34,19 @@ author: Himel Das
 - Avoid project-specific details or confidential information
 - Focus on what to do, not how to do it
 
+## Constants and Variables
+
+When a file path or configuration value is referenced multiple times, define constants at the top and reference them throughout:
+
+```
+## Constants
+- **CONFIG_FILE**: `path/to/config.json` - Configuration settings
+
+## Process
+- Read from `CONFIG_FILE`
+- Update `CONFIG_FILE` with new values
+```
+
 ## File Format
 
 - Save rules as `.mdc` files with kebab-case names
