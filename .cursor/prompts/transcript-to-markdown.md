@@ -97,6 +97,37 @@ This format makes it easy to remember the command structure while also providing
 
 Always keep a summary section written in points. Use unordered lists (not numeric lists) for all summaries and content.
 
+#### Exam Notes Section
+
+If the author mentions exam tips, likely exam questions, or important exam-related information, create an "Exam Notes" section after the Summary section. This section should:
+
+* Be placed after the Summary section and before the main content sections
+* Use `## Exam Notes` as the section header
+* Create separate subsections for each topic/question using `###` headers
+* Each subsection should have a descriptive title (e.g., "Secure Fine-Tuning with Sensitive Data")
+* Format each exam note with:
+  * **Question**: The exam question format
+  * **Answer**: The answer or key information
+  * Additional context or explanation as needed
+
+**Example:**
+```markdown
+## Exam Notes
+
+### Topic Name
+
+**Question**: Generic exam question format here?
+
+**Answer**: Generic answer with key technical concepts. This type of question may appear on the exam, so remember the key principle: [generic technical guidance].
+```
+
+**Guidelines:**
+* Only create this section if exam-related information is mentioned in the transcript
+* Separate each exam topic/question into its own subsection
+* Use clear, descriptive subsection titles
+* Bold key terms in answers
+* Keep questions and answers concise and exam-focused
+
 ### 8. Formatting Rules
 
 * Always use unordered lists (`*`) instead of numeric lists
@@ -117,10 +148,11 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 2. **Analyze Transcript**: Identify all topics, concepts, and commands mentioned in the transcript - this determines what content to include
 3. **Filter Additional Resources**: Review additional resources and identify only the content that relates to topics covered in the transcript
 4. **Extract Commands**: Identify and list all commands from the transcript and any related commands from additional resources that support transcript content. For each command, include both the syntax/pattern with placeholders and a concrete example
-5. **Structure Content**: Organize transcript content into logical sections with appropriate headers, using additional resources to enhance details where relevant
-6. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
-7. **Format**: Apply markdown formatting with proper line breaks and list formatting
-8. **Review**: Ensure summary is in point form
+5. **Extract Exam Notes**: Identify any exam tips, likely exam questions, or exam-related information mentioned by the author. Create separate subsections for each topic/question
+6. **Structure Content**: Organize transcript content into logical sections with appropriate headers, using additional resources to enhance details where relevant
+7. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
+8. **Format**: Apply markdown formatting with proper line breaks and list formatting
+9. **Review**: Ensure summary is in point form and exam notes are properly separated by topic
 9. **Save SRT File**: Determine the SRT filename based on the markdown filename (use `transcript.srt` for generic names like `readme` or `index`, otherwise use the same base name). Check if an SRT file with the determined name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
 10. **Output**: Deliver a well-structured markdown document based primarily on the transcript, with supplemental content from additional resources only where it enhances transcript topics
 
@@ -144,6 +176,20 @@ Always keep a summary section written in points. Use unordered lists (not numeri
 * Key point two
 * Key point three
 
+## Exam Notes
+
+### Topic 1
+
+**Question**: Exam question format here?
+
+**Answer**: Answer with key information.
+
+### Topic 2
+
+**Question**: Another exam question?
+
+**Answer**: Another answer.
+
 ## Section 1
 
 ### Subsection 1.1
@@ -164,6 +210,7 @@ Content here...
 * [ ] Main title reflects the overall topic
 * [ ] Commands section exists at the top with all commands listed, each showing both syntax/pattern with placeholders and a concrete example
 * [ ] Summary section uses unordered lists
+* [ ] Exam Notes section exists (if exam-related information is mentioned) with separate subsections for each topic/question
 * [ ] All headers have next-line characters after them
 * [ ] No timestamps or speaker identifiers remain
 * [ ] Conversational elements have been removed (greetings, transitional phrases, future references)
