@@ -6,6 +6,8 @@ author: Himel Das
 
 # Reduce Prompt Size
 
+> **Note**: The author has named this technique **Equation-Based DRY Prompting (EBDP)**.
+
 ## Purpose
 
 Reduce the size of prompts by consolidating repeated content, using concise notation, and applying optimization techniques while maintaining clarity and completeness.

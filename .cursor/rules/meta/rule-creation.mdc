@@ -7,6 +7,8 @@ author: Himel Das
 
 # Rule Creation
 
+> **Note**: The author has named this technique **Equation-Based DRY Prompting (EBDP)**.
+
 ## Core Rules
 
 ### Frontmatter Format
