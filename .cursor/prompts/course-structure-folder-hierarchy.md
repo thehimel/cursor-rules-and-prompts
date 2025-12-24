@@ -36,9 +36,17 @@ When using this prompt, provide:
 - **For chapters**: Count total chapters
   - If 9 or fewer chapters: use single digits (1, 2, 3, ...)
   - If 10 or more chapters: use zero-padded double digits (01, 02, 03, ...)
-- **For lessons**: Count lessons within each chapter
-  - If 9 or fewer lessons: use single digits (1, 2, 3, ...)
-  - If 10 or more lessons: use zero-padded double digits (01, 02, 03, ...)
+- **For lessons**: **Conditional Numbering Based on Source**
+  - **If lesson numbers are explicitly shown in the source/screenshot:**
+    - Use the exact lesson numbers as shown (e.g., if screenshot shows 08, use `08`, not `01`)
+    - Maintain the sequential numbering from the course structure (e.g., if Section 1 ends at 7, Section 2 starts at 8)
+    - Use zero-padding when the number is 10 or greater (08, 09, 10, 11, ...)
+    - Use single digits when the number is less than 10 (1, 2, 3, ... 9)
+  - **If lesson numbers are NOT shown in the source/screenshot:**
+    - Count lessons within each chapter
+    - If 9 or fewer lessons: use single digits (1, 2, 3, ...)
+    - If 10 or more lessons: use zero-padded double digits (01, 02, 03, ...)
+    - Number lessons sequentially within each chapter starting from 1 or 01
 - **For sections**: Count sections within each chapter
   - If 9 or fewer sections: use single digits (1, 2, 3, ...)
   - If 10 or more sections: use zero-padded double digits (01, 02, 03, ...)
@@ -57,13 +65,21 @@ When using this prompt, provide:
 #### Lesson Folders
 
 - Create numbered lesson folders within each chapter: `N-lesson-name` or `NN-lesson-name`
+- **Numbering Logic**:
+  - **If lesson numbers are shown in the source/screenshot:**
+    - Use the exact numbers from the source (e.g., if source shows 08, use `08-lesson-name`)
+    - Preserve course-wide sequential numbering (e.g., if Chapter 1 ends at 7, Chapter 2 starts at 8)
+    - Use zero-padding for numbers 10 or greater (08, 09, 10, 11, ...)
+    - Use single digits for numbers less than 10 (1, 2, 3, ... 9)
+  - **If lesson numbers are NOT shown in the source/screenshot:**
+    - Count lessons within the chapter
+    - If 9 or fewer lessons: use single digits (1, 2, 3, ...)
+    - If 10 or more lessons: use zero-padded double digits (01, 02, 03, ...)
+    - Number sequentially starting from 1 or 01 within each chapter
 - **Important**: All items that appear at the same level in the screenshot/list should be created as lessons at the same level within the chapter
 - Do not nest lessons in section folders unless there's a clear hierarchical grouping
-- Use single digits (1, 2, 3, ...) if 9 or fewer lessons in the chapter
-- Use zero-padded double digits (01, 02, 03, ...) if 10 or more lessons in the chapter
 - Use lowercase with dashes separating words
 - Make names concise and descriptive
-- Number lessons sequentially within each chapter starting from 1 or 01
 
 #### Section Folders (only if clearly hierarchical)
 
@@ -161,13 +177,16 @@ course-directory/
 ## Guidelines
 
 - Always use numbered prefixes for chapters and lessons
+- **Lesson Numbering Rule**: 
+  - **If lesson numbers are shown in the source**: Use the exact numbers from the source (e.g., if source shows 08, use `08`, not `01`)
+  - **If lesson numbers are NOT shown in the source**: Number lessons sequentially starting from 1 or 01 within each chapter based on count
+  - Preserve course-wide sequential numbering when source numbers are provided
 - **Same-level items rule**: Items appearing at the same visual level in screenshots/lists should be created as lessons at the same level, not nested in section folders
 - Only create section folders when there's a clear hierarchical grouping with nested items
-- Determine numbering format based on count:
-  - Single digits (1-9) for 9 or fewer items
-  - Zero-padded double digits (01-99) for 10 or more items
-- Apply numbering format consistently within each level (chapters, lessons, sections)
-- Maintain sequential numbering within each level
+- Determine numbering format based on:
+  - The actual number shown in source (if provided), or
+  - Count of items (if numbers not shown): single digits (1-9) for ≤9 items, zero-padded (01-99) for ≥10 items
+- Apply numbering format consistently
 - Use lowercase with dashes for all folder names
 - Keep names concise but descriptive
 - Create README files for all chapters and lessons
@@ -191,11 +210,15 @@ After creating the structure:
 ## Remember
 
 - The goal is to create a clean, organized folder structure
+- **Lesson Numbering**: 
+  - **If source shows lesson numbers**: Use exact numbers from source (e.g., 08 → `08-lesson-name`)
+  - **If source does NOT show lesson numbers**: Number sequentially from 1 or 01 within each chapter
+- Preserve course-wide sequential numbering when source numbers are provided (e.g., Chapter 1: 1-7, Chapter 2: 8-37)
 - **Items at the same level in screenshots should be lessons at the same level** - do not create unnecessary section folders
 - Only create section folders when there's a clear hierarchical grouping with nested items
 - Naming should be consistent and follow conventions
-- Numbering format depends on count: single digits (≤9) or zero-padded double digits (≥10)
-- Apply numbering format consistently within each level
+- Numbering format: single digits (1-9) for numbers < 10, zero-padded (08, 09, 10, ...) for numbers ≥ 10
+- Apply numbering format consistently
 - README files provide structure, not content
 - Avoid including any copyrighted material
 - Structure should be ready for content to be added later
