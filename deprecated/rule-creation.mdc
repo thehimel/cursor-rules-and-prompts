@@ -1,0 +1,52 @@
+---
+id: rule-meta-rule-creation
+alwaysApply: true
+description: Guidelines for creating concise, generic rules and prompts with required frontmatter
+author: Himel Das
+---
+
+# Rule Creation
+
+## Category Organization
+
+- Fit new rules into existing categories when possible
+- Only create new categories when necessary
+
+## Required Frontmatter
+
+```
+---
+id: rule-{category}-{filename-without-ext}
+alwaysApply: true | false
+description: concise description
+author: Himel Das
+---
+```
+
+**ID Format**: `rule-{category}-{filename-without-ext}`
+- Example: `rule-general-file-organization` for `general/file-organization.mdc`
+- Enables file tracking during sync operations
+
+## Content Guidelines
+
+- Keep rules and prompts concise
+- Stay generic and language-independent
+- Avoid project-specific details or confidential information
+- Focus on what to do, not how to do it
+
+## Constants and Variables
+
+When a file path or configuration value is referenced multiple times, define constants at the top and reference them throughout:
+
+```
+## Constants
+- **CONFIG_FILE**: `path/to/config.json` - Configuration settings
+
+## Process
+- Read from `CONFIG_FILE`
+- Update `CONFIG_FILE` with new values
+```
+
+## File Format
+
+- Save rules as `.mdc` files with kebab-case names

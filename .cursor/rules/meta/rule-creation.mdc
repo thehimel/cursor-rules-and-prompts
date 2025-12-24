@@ -1,18 +1,15 @@
 ---
 id: rule-meta-rule-creation
 alwaysApply: true
-description: Guidelines for creating concise, generic rules and prompts with required frontmatter
+description: Concise guidelines for creating rules and prompts with required frontmatter and optimization techniques
 author: Himel Das
 ---
 
 # Rule Creation
 
-## Category Organization
+## Core Rules
 
-- Fit new rules into existing categories when possible
-- Only create new categories when necessary
-
-## Required Frontmatter
+### Frontmatter Format
 
 ```
 ---
@@ -23,30 +20,25 @@ author: Himel Das
 ---
 ```
 
-**ID Format**: `rule-{category}-{filename-without-ext}`
-- Example: `rule-general-file-organization` for `general/file-organization.mdc`
-- Enables file tracking during sync operations
+**ID Pattern**: `rule-{category}-{filename-without-ext}` → `rule-general-file-organization` for `general/file-organization.mdc`
 
-## Content Guidelines
+### Content Guidelines
 
-- Keep rules and prompts concise
-- Stay generic and language-independent
-- Avoid project-specific details or confidential information
-- Focus on what to do, not how to do it
+Concise, generic, language-independent. Avoid project-specific details. Focus on **what** to do, not **how**. Use easy notation: `≤`, `≥`, `→`, `=`, `{A|B}`. Define constants at top if referenced `≥ 2` times. File format: `.mdc` with kebab-case names.
 
-## Constants and Variables
+## Process
 
-When a file path or configuration value is referenced multiple times, define constants at the top and reference them throughout:
+Check categories (fit existing if possible). Create frontmatter using pattern above. Write content following **Content Guidelines**. Define constants for values referenced `≥ 2` times. Optimize using reduction techniques.
+
+## Constants Pattern
+
+If value referenced `≥ 2` times, define at top:
 
 ```
 ## Constants
-- **CONFIG_FILE**: `path/to/config.json` - Configuration settings
+- **CONFIG_FILE**: `path/to/config.json` - Description
 
 ## Process
 - Read from `CONFIG_FILE`
-- Update `CONFIG_FILE` with new values
+- Update `CONFIG_FILE`
 ```
-
-## File Format
-
-- Save rules as `.mdc` files with kebab-case names
