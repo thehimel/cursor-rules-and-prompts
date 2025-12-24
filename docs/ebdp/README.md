@@ -46,6 +46,47 @@ The equation format is more scannable and takes less space while being just as c
 - **Easier maintenance**: Change a rule once, not in multiple places
 - **Better structure**: Core rules at the top create clear hierarchy
 - **Preserves functionality**: All original capabilities remain intact
+- **Cost savings**: Smaller prompts mean fewer input tokens, directly reducing API costs
+
+## Cost Optimization
+
+Reducing prompt size directly translates to cost savings. Since LLM pricing is typically based on input tokens (prompt
+tokens), a 40-60% reduction in prompt size means proportional savings on every API call.
+
+**Example calculation** (based on [LLM pricing data](https://www.llm-prices.com/) as of December 24, 2025):
+
+If your original prompt uses 10,000 tokens and you reduce it by 50%:
+
+- **Before**: 10,000 input tokens per call
+- **After**: 5,000 input tokens per call
+- **Savings**: 50% reduction in input token costs
+
+For high-volume usage, this adds up quickly. If you're making 1,000 calls per day:
+
+- **Daily savings**: 5,000 tokens × 1,000 calls = 5M tokens saved per day
+- **Monthly savings**: ~150M tokens saved
+
+### Cost Savings by Model
+
+Here's a practical breakdown of cost savings for popular models when reducing prompt size by 50% (10,000 → 5,000 tokens
+per call, 1,000 calls/day):
+
+| Model                    | Input Cost (per 1M tokens) | Original Cost/Day | After 50% Reduction | Daily Savings | Monthly Savings |
+|--------------------------|----------------------------|-------------------|---------------------|---------------|-----------------|
+| **OpenAI GPT-4 Turbo**   | $10.00                     | $100.00           | $50.00              | $50.00        | ~$1,500         |
+| **OpenAI GPT-4**         | $30.00                     | $300.00           | $150.00             | $150.00       | ~$4,500         |
+| **OpenAI GPT-3.5 Turbo** | $0.50                      | $5.00             | $2.50               | $2.50         | ~$75            |
+| **Claude 3.5 Sonnet**    | $3.00                      | $30.00            | $15.00              | $15.00        | ~$450           |
+| **Claude 3 Opus**        | $15.00                     | $150.00           | $75.00              | $75.00        | ~$2,250         |
+| **Claude 3.5 Haiku**     | $0.25                      | $2.50             | $1.25               | $1.25         | ~$37.50         |
+
+*Pricing data from [LLM pricing calculator](https://www.llm-prices.com/) as of December 24, 2025*
+
+**Key insight**: For premium models like GPT-4 or Claude 3 Opus, the savings are substantial. Even a 40% reduction (
+which is more conservative) would save $60-120 daily on GPT-4, or $1,800-3,600 monthly.
+
+The beauty of EBDP is that you get these cost savings while actually improving prompt clarity and maintainability—a
+win-win.
 
 ## The Key Principle
 
