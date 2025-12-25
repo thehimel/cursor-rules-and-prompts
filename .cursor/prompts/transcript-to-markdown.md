@@ -55,10 +55,37 @@ Create a clear, hierarchical markdown document with:
 * Maintain consistency in formatting and structure when integrating supplemental content
 * If a topic is mentioned in the transcript but not detailed, use additional resources to provide that detail
 
+### 4.1. Handling Image Resources
+
+**Image Resource Detection**: If a resources folder (e.g., `assets`, `images`, `resources`) exists at the same level as the output markdown file, process all images in that folder.
+
+**Image Processing Workflow:**
+1. **OCR Processing**: Perform OCR (Optical Character Recognition) on all images in the resources folder to extract text content
+2. **Ordering**: Analyze the creation time (file modification time) of images to determine their chronological order
+3. **Content Integration**: Use the OCR-extracted text to understand what each image contains and where it should be placed in the document
+4. **Placement**: Incorporate images into the markdown at appropriate locations based on:
+  * The chronological order of images (earliest created first)
+  * The relevance of image content to the surrounding text
+  * The natural flow of the educational content
+
+**Image Markdown Format:**
+* Use relative paths from the markdown file to the image
+* Format: `![Alt text](./assets/image-name.png)` or `![Alt text](./images/image-name.png)`
+* Include descriptive alt text based on OCR content
+* Place images immediately after or within relevant sections that discuss the concepts shown in the image
+* If OCR reveals the image contains important text or examples, consider including that content as well
+
+**Guidelines:**
+* Images should enhance understanding of concepts mentioned in the transcript
+* Place images in logical positions within the content flow
+* Use OCR-extracted text to create meaningful alt text and captions
+* Maintain the chronological order of images when they represent a sequence or progression
+* If multiple images relate to the same concept, group them together with appropriate spacing
+
 ### 5. Saving Transcript in SRT Format
 
 * **Location**: Save the transcript in SRT format in the same directory where the markdown file is saved
-* **File Naming**: 
+* **File Naming**:
   * If the target markdown file has a generic name (case-insensitive) such as `readme`, `index`, `README`, `INDEX`, etc., save the SRT file as `transcript.srt`
   * Otherwise, use the same base name as the markdown file with `.srt` extension (e.g., if markdown is `lesson.md`, save as `lesson.srt`)
 * **Conditional Saving**: Only save the SRT file if it does not already exist in the repository
@@ -145,16 +172,26 @@ If the author mentions exam tips, likely exam questions, or important exam-relat
 ## Processing Workflow
 
 1. **Input**: Receive transcript as text or file, along with any additional resources (e.g., slide PDFs, presentation materials)
-2. **Analyze Transcript**: Identify all topics, concepts, and commands mentioned in the transcript - this determines what content to include
-3. **Filter Additional Resources**: Review additional resources and identify only the content that relates to topics covered in the transcript
-4. **Extract Commands**: Identify and list all commands from the transcript and any related commands from additional resources that support transcript content. For each command, include both the syntax/pattern with placeholders and a concrete example
-5. **Extract Exam Notes**: Identify any exam tips, likely exam questions, or exam-related information mentioned by the author. Create separate subsections for each topic/question
-6. **Structure Content**: Organize transcript content into logical sections with appropriate headers, using additional resources to enhance details where relevant
-7. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
-8. **Format**: Apply markdown formatting with proper line breaks and list formatting
-9. **Review**: Ensure summary is in point form and exam notes are properly separated by topic
-9. **Save SRT File**: Determine the SRT filename based on the markdown filename (use `transcript.srt` for generic names like `readme` or `index`, otherwise use the same base name). Check if an SRT file with the determined name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
-10. **Output**: Deliver a well-structured markdown document based primarily on the transcript, with supplemental content from additional resources only where it enhances transcript topics
+2. **Check for Image Resources**: If a resources folder (e.g., `assets`, `images`, `resources`) exists at the same level as the output markdown file:
+  * List all images in the folder
+  * Sort images by creation/modification time to determine chronological order
+  * Perform OCR on each image to extract text content
+  * Analyze OCR results to understand what each image contains
+3. **Analyze Transcript**: Identify all topics, concepts, and commands mentioned in the transcript - this determines what content to include
+4. **Filter Additional Resources**: Review additional resources and identify only the content that relates to topics covered in the transcript
+5. **Extract Commands**: Identify and list all commands from the transcript and any related commands from additional resources that support transcript content. For each command, include both the syntax/pattern with placeholders and a concrete example
+6. **Extract Exam Notes**: Identify any exam tips, likely exam questions, or exam-related information mentioned by the author. Create separate subsections for each topic/question
+7. **Structure Content**: Organize transcript content into logical sections with appropriate headers, using additional resources to enhance details where relevant
+8. **Integrate Images**: Place images from the resources folder at appropriate locations in the document:
+  * Use chronological order (earliest created first) as a guide
+  * Match image content (from OCR) to relevant sections in the transcript
+  * Insert images using relative paths with descriptive alt text
+  * Ensure images enhance understanding of the surrounding content
+9. **Transform**: Remove timestamps, speaker identifiers, conversational elements, and clean up formatting
+10. **Format**: Apply markdown formatting with proper line breaks and list formatting
+11. **Review**: Ensure summary is in point form and exam notes are properly separated by topic
+12. **Save SRT File**: Determine the SRT filename based on the markdown filename (use `transcript.srt` for generic names like `readme` or `index`, otherwise use the same base name). Check if an SRT file with the determined name already exists in the target directory. If not, save the original transcript in SRT format in the same location as the markdown file
+13. **Output**: Deliver a well-structured markdown document based primarily on the transcript, with supplemental content from additional resources and images integrated at appropriate locations
 
 ## Example Structure
 
@@ -219,6 +256,12 @@ Content here...
 * [ ] Important terms, concepts, benefits, and key points are bolded throughout the document
 * [ ] Educational flow is maintained
 * [ ] Document serves as a useful reference or study guide
+* [ ] If image resources folder exists at the same level as output file:
+  * [ ] All images have been processed with OCR
+  * [ ] Images are ordered chronologically (by creation time)
+  * [ ] Images are placed at appropriate locations in the document
+  * [ ] Images use relative paths with descriptive alt text
+  * [ ] Image placement enhances understanding of surrounding content
 * [ ] SRT file has been saved in the same directory as the markdown file (only if it didn't already exist)
 * [ ] SRT file naming follows the rule: `transcript.srt` for generic filenames (readme, index, etc.), otherwise same name as markdown file
 * [ ] SRT file follows proper SRT format with sequential numbers, timestamps, and text content
