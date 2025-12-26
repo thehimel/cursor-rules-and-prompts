@@ -11,30 +11,25 @@ Transform transcripts into well-structured markdown documents. **Transcript is P
 ## Core Rules
 
 ### Formatting
-* Headers: `#` title, `##` sections, `###` subsections (newline after each)
-* Lists: Use `*` (unordered) for all lists, never numeric
-* Code: Use code blocks for commands/examples; bold key terms, concepts, benefits
-* Structure: Remove timestamps, speaker IDs, conversational fluff; maintain educational flow
+Headers: `#` title, `##` sections, `###` subsections (newline after each). Lists: Use `*` (unordered) for all lists, never numeric. Code: Use code blocks for commands/examples; bold key terms, concepts, benefits. Structure: Remove timestamps, speaker IDs, conversational fluff; maintain educational flow.
 
 ### Resources
-* **Transcript** → determines topics to include
-* **Additional resources** → enhance transcript topics only (code examples, visual descriptions, definitions)
-* **Image folders** (`assets`, `images`, `resources` at same level as output): OCR all images, sort by creation time, place chronologically in relevant sections using `![Alt](./assets/image.png)` with OCR-based alt text
+**Transcript** → determines topics to include. **Additional resources** → enhance transcript topics only (code examples, visual descriptions, definitions). **Image folders** (`assets`, `images`, `resources` at same level as output): OCR all images, sort by creation time, place chronologically in relevant sections using `![Alt](./assets/image.png)` with OCR-based alt text.
 
 ### SRT File
-* Location: Same directory as markdown
-* Naming: `transcript.srt` if markdown name is generic (`readme`, `index`), else `{markdown-name}.srt`
-* Format: Sequential numbers, `HH:MM:SS,mmm --> HH:MM:SS,mmm` timestamps, blank lines between entries
-* Save only if file doesn't exist
+Location: Same directory as markdown. Naming: `transcript.srt` if markdown name is generic (`readme`, `index`), else `{markdown-name}.srt`. Format: Sequential numbers, `HH:MM:SS,mmm --> HH:MM:SS,mmm` timestamps, blank lines between entries. Save only if file doesn't exist.
 
 ## Required Sections
 
 ### Commands
-Top section listing all commands. For each: syntax with placeholders (`<param>`, `[optional]`) + concrete example.
+Top section with categorized tables. Each table: **Command**, **Syntax** (placeholders: `<param>`, `[optional]`), **Example** (concrete usage). Organize commands intelligently by category (e.g., file operations, data processing, configuration). Create multiple tables if needed for proper categorization.
 
-**Example:**
-* `command <required> [optional]`
-* `command actual-value --flag`
+**Example Structure:**
+
+| Command | Syntax | Example |
+|---------|--------|---------|
+| `cmd` | `cmd <arg> [opt]` | `cmd value --flag` |
+| `process` | `process <input> [output]` | `process data.txt result.json` |
 
 ### Summary
 Unordered list of key points.
@@ -48,12 +43,12 @@ After Summary, before main content. Format: `## Exam Notes` with `### Topic` sub
 2. **Images**: If resource folder exists → OCR images, sort by creation time, analyze content
 3. **Analyze**: Extract topics, concepts, commands from transcript
 4. **Filter**: Use only resource content related to transcript topics
-5. **Extract**: Commands (syntax + example), exam notes (if any)
+5. **Extract**: Commands (categorize, create tables with syntax + example), exam notes (if any)
 6. **Structure**: Organize into logical sections with headers
 7. **Integrate**: Place images chronologically in relevant sections
 8. **Transform**: Remove timestamps, IDs, conversational elements
 9. **Format**: Apply markdown formatting, bold key terms
-10. **Review**: Verify summary format, exam notes separation
+10. **Review**: Verify summary format, exam notes separation, command tables properly categorized
 11. **Save SRT**: Determine filename, check existence, save if missing
 12. **Output**: Structured markdown with transcript as primary source
 
@@ -64,8 +59,18 @@ After Summary, before main content. Format: `## Exam Notes` with `### Topic` sub
 
 ## Commands
 
-* `cmd <arg> [opt]`
-* `cmd value --flag`
+### File Operations
+
+| Command | Syntax | Example |
+|---------|--------|---------|
+| `read` | `read <file>` | `read data.txt` |
+| `write` | `write <file> <content>` | `write output.txt "Hello"` |
+
+### Data Processing
+
+| Command | Syntax | Example |
+|---------|--------|---------|
+| `process` | `process <input> [output]` | `process data.txt result.json` |
 
 ## Summary
 
@@ -87,7 +92,7 @@ Content...
 
 ## Quality Checklist
 
-* [ ] Title reflects topic; Commands section with syntax + examples
+* [ ] Title reflects topic; Commands section with categorized tables (syntax + examples)
 * [ ] Summary uses unordered lists; Exam Notes (if any) properly formatted
 * [ ] Headers have newlines; no timestamps/IDs; conversational elements removed
 * [ ] Content organized logically; technical terms formatted; key terms bolded
