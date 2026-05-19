@@ -103,4 +103,6 @@ QUALITY REQUIREMENTS:
 - Enterprise-grade educational design
 - Similar to premium cloud certification course slides
 
-NOW GENERATE THE INFOGRAPHIC FOR THIS LECTURE.
+NOW GENERATE THE INFOGRAPHIC FOR THIS LECTURE:
+
+[PASTE YOUR LECTURE NOTES HERE]
