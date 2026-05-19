@@ -21,6 +21,24 @@ IMPORTANT DESIGN RESTRICTIONS:
 - Use generic cloud-computing visuals and neutral tech icons only
 - Maintain a professional enterprise-cloud aesthetic without brand identity
 
+⚠️ STRICT COPYRIGHT & ORIGINALITY RULES:
+- The infographic MUST be fully original and newly generated
+- DO NOT copy any sentence, phrase, definition, example, analogy, workflow, or explanation directly from the lecture notes
+- DO NOT reuse lecture examples, case studies, scenarios, or sample wording
+- DO NOT replicate textbook layouts, certification slides, proprietary diagrams, or branded visual structures
+- ALL educational content must be transformed into newly written explanations
+- Rewrite concepts using completely fresh wording while preserving technical meaning
+- Summarize ideas independently instead of paraphrasing line-by-line
+- Generate unique teaching-friendly bullets rather than adapted lecture text
+- Create original examples and simplified conceptual explanations where needed
+- Avoid recognizable copied phrasing from educational materials or online sources
+- The final slide should feel like a newly designed professional training asset, NOT a reformatted copy of notes
+- Use only generic and newly generated architecture diagrams
+- Reconstruct workflows visually from scratch instead of imitating known cloud-provider diagrams
+- Ensure all labels, section titles, captions, and callouts are uniquely written
+- Do not reproduce copyrighted charts, tables, figures, or illustration styles
+- Maintain originality in both textual content and visual composition
+
 STYLE & QUALITY:
 - Modern educational infographic
 - High-end presentation slide design
@@ -78,13 +96,13 @@ TEXT RULES:
 - Use short bullets instead of paragraphs
 - Emphasize keywords visually
 - Ensure readability from a presentation screen
-- DO NOT copy lecture notes verbatim
-- Rewrite and paraphrase all educational content into unique wording
-- Summarize concepts in an original way to avoid copyright issues
-- Avoid direct sentence reuse from source material
-- Generate concise teaching-friendly explanations instead of copied text
-- Preserve technical meaning while using fresh phrasing
-- Content should feel like a professionally redesigned training slide, not pasted notes
+- Generate concise teaching-focused summaries
+- Avoid lengthy technical wording
+- Replace copied terminology with simplified original phrasing whenever possible
+- Create fresh educational explanations optimized for visual learning
+- Do not quote lecture material directly
+- Do not preserve original sentence structures from the source
+- Convert dense lecture content into visually digestible original summaries
 
 COLOR PALETTE:
 - Primary: dark navy blue
@@ -102,6 +120,11 @@ QUALITY REQUIREMENTS:
 - Visually balanced composition
 - Enterprise-grade educational design
 - Similar to premium cloud certification course slides
+
+FINAL OUTPUT EXPECTATION:
+- The final infographic must look like an entirely new educational design created from understanding the topic rather than copying lecture material
+- The result should be visually original, structurally unique, and textually rewritten from scratch
+- Prioritize originality, clarity, and presentation quality over faithfulness to source wording
 
 NOW GENERATE THE INFOGRAPHIC FOR THIS LECTURE:
 
