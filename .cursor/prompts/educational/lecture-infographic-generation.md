@@ -1,12 +1,25 @@
 ---
 id: prompt-lecture-infographic-generation
 author: Himel Das
-description: Generate premium AWS-style infographic lecture diagrams from notes via image generation (1920×1080, 16:9)
 ---
 
 # Lecture Infographic Generation
 
-Create a premium infographic-style lecture diagram in a clean AWS/cloud-computing visual style.
+Create a premium infographic-style lecture diagram in a clean cloud-computing visual style.
+
+⚠️ HARD OUTPUT REQUIREMENT:
+- The final image MUST be EXACTLY 16:9 aspect ratio
+- Resolution MUST be EXACTLY 1920×1080
+- Do NOT generate portrait, square, cropped, or near-16:9 layouts
+- Ensure every element fits cleanly inside a true widescreen presentation canvas
+- No extra borders or vertical overflow
+- Layout must be optimized specifically for PowerPoint/Keynote slides
+
+IMPORTANT DESIGN RESTRICTIONS:
+- DO NOT place any AWS logo, company logo, watermark, or branding anywhere
+- Avoid copyrighted branding elements
+- Use generic cloud-computing visuals and neutral tech icons only
+- Maintain a professional enterprise-cloud aesthetic without brand identity
 
 STYLE & QUALITY:
 - Modern educational infographic
@@ -18,18 +31,19 @@ STYLE & QUALITY:
 - Minimal but visually rich
 - White/light background with colored content cards
 - Use soft shadows, rounded corners, subtle gradients
-- Corporate tech aesthetic similar to AWS training materials
-- Ultra-sharp details, presentation-ready
-- Aspect ratio 16:9, resolution 1920×1080
+- Corporate cloud-tech aesthetic
+- Ultra-sharp details
+- Presentation-ready quality
 
 LAYOUT:
 - Large bold title at top-left
-- Small logo/icon area at top-right
-- Multi-section card layout
+- Minimal icon area at top-right (generic icon only, no logos)
+- Multi-section horizontal widescreen layout
 - Central process/workflow diagram in the middle
 - Supporting information panels around it
 - Bottom summary/key takeaways bar
 - Use arrows, icons, cloud symbols, server icons, storage icons, maps, and workflow connectors
+- Maintain strong horizontal composition suitable for widescreen slides
 
 VISUAL HIERARCHY:
 - Each section should have:
@@ -74,7 +88,7 @@ TEXT RULES:
 
 COLOR PALETTE:
 - Primary: dark navy blue
-- Secondary: AWS orange
+- Secondary: orange
 - Accent colors: green, purple, cyan
 - Neutral whites and light grays
 - Consistent professional cloud-tech theme
@@ -87,6 +101,6 @@ QUALITY REQUIREMENTS:
 - Sharp typography hierarchy
 - Visually balanced composition
 - Enterprise-grade educational design
-- Similar to premium AWS certification course slides
+- Similar to premium cloud certification course slides
 
 NOW GENERATE THE INFOGRAPHIC FOR THIS LECTURE.
