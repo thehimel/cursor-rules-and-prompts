@@ -1,0 +1,20 @@
+---
+id: rule-documentation-ignore-analysis
+alwaysApply: true
+description: Never treat analysis/ as documentation to read, update, or cite by default
+author: Himel Das
+---
+
+# Ignore Analysis Directory
+
+## Core Principle
+
+Treat `analysis/` as **scratch / planning only**. Ignore it unless the user explicitly asks about a file there.
+
+## Rules
+
+- ❌ Do not read, update, verify, or cite `analysis/**` when checking whether docs are up to date
+- ❌ Do not sync product docs with analysis plans (or the reverse) by default
+- ❌ Do not suggest cleaning up analysis plans as follow-up work unless asked
+- ✅ Use `docs/` (and code) as the source of truth for implemented behavior
+- ✅ Only open `analysis/` when the user names it or clearly wants plan work there
